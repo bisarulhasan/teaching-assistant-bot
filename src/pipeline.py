@@ -1,10 +1,15 @@
-"""Main RAG pipeline — ties ingestion, retrieval, and generation together."""
+"""Main RAG pipeline — ties ingestion, retrieval, reranking, and generation together."""
 
 from src.ingestion.loader import load_all_pdfs
 from src.ingestion.chunker import chunk_documents
 from src.ingestion.embedder import get_weaviate_client, create_collection, embed_and_store
 from src.retrieval.vector_retriever import vector_search
+from src.retrieval.bm25_retriever import BM25Retriever
+from src.retrieval.hybrid_retriever import hybrid_search
+from src.retrieval.reranker import rerank_chunks
 from src.generation.generator import generate_answer
+from src.generation.citation_checker import verify_answer_against_context
+from src.config.settings import RETRIEVAL_TOP_K, RERANK_TOP_K
 
 
 def ingest(data_dir: str = "data/raw", fresh: bool = False):
@@ -13,13 +18,9 @@ def ingest(data_dir: str = "data/raw", fresh: bool = False):
     print("INGESTION PIPELINE")
     print("=" * 60)
     
-    # Step 1: Load PDFs
     documents = load_all_pdfs(data_dir)
-    
-    # Step 2: Chunk documents
     chunks = chunk_documents(documents)
     
-    # Step 3: Embed and store in Weaviate
     client = get_weaviate_client()
     try:
         create_collection(client, delete_existing=fresh)
@@ -31,15 +32,46 @@ def ingest(data_dir: str = "data/raw", fresh: bool = False):
     return chunks
 
 
-def query(question: str, top_k: int = 5) -> dict:
-    """Run a single query through the RAG pipeline."""
+def query(question: str, use_hybrid: bool = True, verify: bool = True) -> dict:
+    """
+    Run a query through the full RAG pipeline.
+    
+    Pipeline: Hybrid Retrieval → Reranking → Generation → Citation Verification
+    """
     client = get_weaviate_client()
     try:
-        # Retrieve relevant chunks
-        retrieved = vector_search(question, client, top_k=top_k)
+        # Step 1: Retrieve candidates
+        if use_hybrid:
+            bm25 = BM25Retriever(client)
+            candidates = hybrid_search(question, client, bm25, top_k=RETRIEVAL_TOP_K)
+        else:
+            candidates = vector_search(question, client, top_k=RETRIEVAL_TOP_K)
         
-        # Generate answer
-        result = generate_answer(question, retrieved)
+        print(f"\nRetrieved {len(candidates)} candidates")
+        
+        # Step 2: Rerank with cross-encoder
+        reranked = rerank_chunks(question, candidates, top_k=RERANK_TOP_K)
+        
+        # Step 3: Generate answer
+        result = generate_answer(
+            question, reranked, prompt_key="rag_answer_with_reranking"
+        )
+        
+        # Step 4: Citation enforcement
+        if verify and result["answer"]:
+            verification = verify_answer_against_context(
+                question, result["answer"], reranked
+            )
+            result["verification"] = verification
+            
+            if not verification["is_supported"]:
+                result["answer"] = (
+                    "I don't have enough information in the course materials to "
+                    "answer this question confidently. The retrieved materials "
+                    "don't sufficiently support a complete answer. "
+                    "Please ask your teacher for clarification."
+                )
+                result["citation_enforced"] = True
         
         return result
     finally:
@@ -50,11 +82,9 @@ if __name__ == "__main__":
     import sys
     
     if len(sys.argv) > 1 and sys.argv[1] == "ingest":
-        # Run: python -m src.pipeline ingest
         fresh = "--fresh" in sys.argv
         ingest(fresh=fresh)
     else:
-        # Run: python -m src.pipeline "What is photosynthesis?"
         question = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else "What is this textbook about?"
         result = query(question)
         
@@ -65,3 +95,6 @@ if __name__ == "__main__":
         print("\nSOURCES:")
         for src in result["sources"]:
             print(f"  - {src['file']}, Page {src['page']}")
+        if "verification" in result:
+            v = result["verification"]
+            print(f"\nVERIFICATION: supported={v['is_supported']}, confidence={v['confidence']}")
