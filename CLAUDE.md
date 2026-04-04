@@ -8,57 +8,44 @@ Production-grade RAG (Retrieval Augmented Generation) teaching assistant bot wit
 
 ## Tech Stack
 
-- **Language:** Python
-- **LLM:** Anthropic Claude (via `ANTHROPIC_API_KEY`)
+- **Orchestration:** LangChain (`langchain`, `langchain-community`, `langchain-openai`, `langchain-cohere`, `langchain-weaviate`)
+- **LLM/Embeddings:** OpenAI (via `OPENAI_API_KEY` / `langchain-openai`)
 - **Reranking:** Cohere cross-encoder (via `COHERE_API_KEY`)
-- **Vector DB:** Weaviate (default: `http://localhost:8080` via `WEAVIATE_URL`)
-
-## Repository Structure
-
-```
-src/
-├── api/          # API endpoints
-├── config/       # Configuration and environment management
-├── evaluation/   # CI-gated evaluation pipeline and metrics
-├── generation/   # LLM generation with citation enforcement
-├── ingestion/    # Document ingestion pipeline
-└── retrieval/    # Hybrid retrieval (vector + keyword) and reranking
-
-data/
-├── raw/          # Source documents (PDFs, etc.)
-├── processed/    # Chunked and embedded documents
-└── eval/         # Golden evaluation datasets
-
-tests/            # Test suite
-scripts/          # Utility scripts
-```
+- **Vector DB:** Weaviate (via `WEAVIATE_URL`, default `http://localhost:8080`)
+- **BM25:** `rank-bm25` for sparse retrieval
+- **Evaluation:** `ragas` + `datasets`
+- **API:** FastAPI + Uvicorn
 
 ## Architecture
 
-The system follows a RAG pipeline:
+The system follows a RAG pipeline orchestrated through `src/pipeline.py`:
 
-1. **Ingestion** (`src/ingestion/`) — Load and chunk source documents from `data/raw/`, store embeddings in Weaviate, write processed artifacts to `data/processed/`
-2. **Retrieval** (`src/retrieval/`) — Hybrid search (dense vector + sparse/BM25) against Weaviate, followed by Cohere cross-encoder reranking
-3. **Generation** (`src/generation/`) — Prompt construction with retrieved context, Claude-based response generation with enforced citations
-4. **Evaluation** (`src/evaluation/`) — Offline metrics against golden datasets in `data/eval/`; CI blocks on regression
-5. **API** (`src/api/`) — Serves the pipeline as an HTTP service
+1. **Ingestion** (`src/ingestion/`) — `loader.py` reads PDFs from `data/raw/`, `chunker.py` splits them, `embedder.py` stores embeddings in Weaviate; processed artifacts go to `data/processed/`
+2. **Retrieval** (`src/retrieval/`) — `vector_retriever.py` runs hybrid search (dense + BM25) against Weaviate, followed by Cohere cross-encoder reranking
+3. **Generation** (`src/generation/`) — `generator.py` constructs prompts with retrieved context and enforces citations in responses
+4. **Config** (`src/config/`) — `settings.py` loads env vars via pydantic-settings; `prompts.yaml` holds prompt templates
+5. **Evaluation** (`src/evaluation/`) — Offline RAGAS metrics against golden datasets in `data/eval/`; CI blocks on regression
+6. **API** (`src/api/`) — FastAPI service over the pipeline
 
 ## Environment
 
-Copy `.env` and fill in credentials:
 ```
-ANTHROPIC_API_KEY=...
+OPENAI_API_KEY=...
 COHERE_API_KEY=...
 WEAVIATE_URL=http://localhost:8080
 ```
 
 ## Commands
 
-> Commands will be added here as the project is built out. Expected patterns for a Python project:
-
 ```bash
 # Install dependencies
 pip install -e ".[dev]"
+
+# Start Weaviate
+docker compose up -d
+
+# Run pipeline
+python -m src.pipeline ingest --fresh
 
 # Run tests
 pytest tests/
@@ -66,10 +53,7 @@ pytest tests/
 # Run a single test
 pytest tests/path/to/test_file.py::test_name
 
-# Lint
+# Lint / format
 ruff check src/
 ruff format src/
-
-# Type check
-mypy src/
 ```
