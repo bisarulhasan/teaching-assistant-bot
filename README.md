@@ -4,33 +4,35 @@ A production-grade RAG (Retrieval-Augmented Generation) system that answers stud
 
 ## Architecture
 
+```
 PDF Documents → Chunking (500-800 tokens) → HuggingFace Embeddings → Weaviate Vector Store
-↓
+                                                                            ↓
 Student Question → Hybrid Retrieval (BM25 + Vector) → Cohere Reranking → LLM Generation
-↓
-Citation Verification → Answer
+                                                                              ↓
+                                                          Citation Verification → Answer
+```
 
 ## Key Features
 
 - **Hybrid Retrieval**: BM25 keyword search + vector semantic search with Reciprocal Rank Fusion
 - **Cross-Encoder Reranking**: Cohere Rerank v3.5 for precision relevance scoring
 - **Citation Enforcement**: Answers are verified against source material; unsupported claims are declined
-- **CI-Gated Evaluation**: RAGAS evaluation runs on every PR; quality regression fails the build
+- **CI-Gated Evaluation**: Unit tests run on every PR via GitHub Actions
 - **Version-Controlled Prompts**: All system prompts stored in `prompts.yaml` with Git history
-- **Fully Local Pipeline**: Runs entirely on open-source models — no paid API dependencies
+- **Fully Local Pipeline**: Runs entirely on open-source models — no paid API dependencies for generation
 
 ## Tech Stack
 
-| Component | Technology |
-|-----------|-----------|
-| Orchestration | LangChain |
-| Vector Store | Weaviate |
-| Embeddings | HuggingFace all-MiniLM-L6-v2 (local) |
-| Reranking | Cohere Rerank v3.5 |
-| Generation | Google Gemma 4 via Ollama (local) |
-| Evaluation LLM | Qwen 2.5:7b via Ollama (local) |
-| Evaluation Framework | RAGAS |
-| CI/CD | GitHub Actions |
+| Component | Technology | Details |
+|-----------|-----------|---------|
+| Orchestration | LangChain | Pipeline orchestration and document processing |
+| Vector Store | Weaviate | Local Docker instance for vector storage |
+| Embeddings | HuggingFace all-MiniLM-L6-v2 | 22M params, ~80 MB, runs on CPU/MPS |
+| Reranking | Cohere Rerank v3.5 | Cross-encoder API (free tier: 1000 calls/month) |
+| Generation | Google Gemma 4 via Ollama | 8B params, ~5.5 GB, runs locally on Apple Silicon |
+| Evaluation LLM | Qwen 2.5:7b via Ollama | 7B params, ~4.7 GB, fast structured output |
+| Evaluation Framework | RAGAS | Faithfulness, relevancy, and precision metrics |
+| CI/CD | GitHub Actions | Unit tests on every PR |
 
 ## Evaluation Results
 
@@ -45,41 +47,91 @@ Citation Verification → Answer
 ### Prerequisites
 
 - Python 3.12+
-- Docker Desktop
-- Ollama
+- Docker Desktop (for Weaviate)
+- Ollama (for local LLMs) — https://ollama.com
+- A Cohere API key (free tier: https://dashboard.cohere.com/api-keys)
+- **Minimum 8 GB RAM** (16 GB recommended for best model performance)
 
-### Setup
+### Step 1: Clone and Install
+
 ```bash
-# Clone and install
 git clone https://github.com/bisarulhasan/teaching-assistant-bot.git
 cd teaching-assistant-bot
-python3 -m venv .venv && source .venv/bin/activate
+python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-
-# Pull local models
-ollama pull gemma4
-ollama pull qwen2.5:7b
-
-# Start Weaviate
-docker compose up -d
-
-# Configure API keys
-cp .env.example .env  # Then add your Cohere API key
 ```
 
-### Usage
+### Step 2: Pull Local Models
+
+This project runs entirely on local open-source models via Ollama. Choose models based on your available RAM:
+
+| Model | Role | Parameters | Download Size | RAM Needed | Minimum Hardware |
+|-------|------|-----------|---------------|------------|-----------------|
+| `gemma4` | RAG generation | 8B | ~5.5 GB | ~9.6 GB | 16 GB RAM |
+| `gemma4:e4b` | RAG generation (lightweight) | 4B effective | ~3 GB | ~5 GB | 8 GB RAM |
+| `qwen2.5:7b` | RAGAS evaluation | 7B | ~4.7 GB | ~8 GB | 16 GB RAM |
+| `qwen2.5:3b` | RAGAS evaluation (lightweight) | 3B | ~2 GB | ~4 GB | 8 GB RAM |
+
+**Recommended setup for 16GB RAM (e.g., MacBook Pro M1/M2/M3):**
+
 ```bash
-# Ingest documents
+ollama pull gemma4          # Best quality for answer generation
+ollama pull qwen2.5:7b      # Fast structured output for evaluation
+```
+
+**For 8GB RAM machines:**
+
+```bash
+ollama pull gemma4:e4b      # Lighter generation model
+ollama pull qwen2.5:3b      # Lighter evaluation model
+```
+
+Then update `src/config/settings.py` to match your chosen models.
+
+### Step 3: Start Weaviate
+
+```bash
+docker compose up -d
+```
+
+### Step 4: Configure API Key
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and replace `your-cohere-key-here` with your actual Cohere API key.
+
+### Step 5: Add Your PDF Textbook
+
+The bot needs a PDF document as its knowledge base. Place it in the `data/raw/` folder and name it `textbook.pdf`:
+
+```bash
+cp ~/Downloads/your-textbook.pdf data/raw/textbook.pdf
+```
+
+**Need a free textbook?** Download any textbook from [OpenStax](https://openstax.org) — they offer free, peer-reviewed textbooks covering subjects like Physics, Biology, Chemistry, Psychology, Economics, and more. Download the PDF version, rename it to `textbook.pdf`, and place it in `data/raw/`. I Used Physics Book.
+
+Any PDF will work — textbooks, handbooks, course notes, documentation. The system will chunk, embed, and index it automatically. For best results, use a document with 50+ pages of text content.
+
+### Step 6: Ingest and Query
+
+```bash
+# Ingest your PDF(s) into the vector store
 python -m src.pipeline ingest --fresh
 
 # Ask a question
-python -m src.pipeline "What is the main topic of chapter 1?"
+python -m src.pipeline "What is physics?"
+```
 
-# Run evaluation
-python -m src.evaluation.evaluate
+### Step 7: Run Evaluation
 
-# Run tests
+```bash
+# Run unit tests
 pytest tests/ -v
+
+# Run RAGAS evaluation (requires Ollama running)
+python -m src.evaluation.evaluate
 ```
 
 ## Project Structure
@@ -92,7 +144,7 @@ pytest tests/ -v
 | `src/config/` | Version-controlled prompts (YAML) and settings |
 | `src/evaluation/` | RAGAS evaluation pipeline |
 | `src/api/` | FastAPI endpoint (chatbot interface — coming soon) |
-| `data/raw/` | Source PDF documents |
+| `data/raw/` | Source PDF documents (add your PDFs here) |
 | `data/eval/` | Golden evaluation dataset |
 | `tests/` | Unit tests |
 
@@ -106,7 +158,7 @@ pytest tests/ -v
 
 4. **Verification**: A separate LLM call verifies whether the generated answer is actually supported by the retrieved context. If not, the system declines to answer rather than hallucinating.
 
-5. **Evaluation**: RAGAS measures faithfulness, answer relevancy, and context precision against a curated golden dataset. CI runs this on every PR.
+5. **Evaluation**: RAGAS measures faithfulness, answer relevancy, and context precision against a curated golden dataset. CI runs unit tests on every PR.
 
 ## License
 
