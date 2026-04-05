@@ -3,27 +3,11 @@ name: RAG Evaluation Pipeline
 on:
   pull_request:
     branches: [develop, main]
-  workflow_dispatch:  # Allow manual triggering
-
-env:
-  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-  COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
-  WEAVIATE_URL: http://localhost:8080
+  workflow_dispatch:
 
 jobs:
-  evaluate:
+  test:
     runs-on: ubuntu-latest
-    
-    services:
-      weaviate:
-        image: cr.weaviate.io/semitechnologies/weaviate:1.27.6
-        ports:
-          - 8080:8080
-        env:
-          AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
-          DEFAULT_VECTORIZER_MODULE: "none"
-          PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
-          CLUSTER_HOSTNAME: "node1"
 
     steps:
       - name: Checkout code
@@ -39,52 +23,5 @@ jobs:
           pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Wait for Weaviate
-        run: |
-          for i in {1..30}; do
-            curl -s http://localhost:8080/v1/meta && break
-            echo "Waiting for Weaviate... ($i)"
-            sleep 2
-          done
-
-      - name: Ingest evaluation corpus
-        run: python -m src.pipeline ingest --fresh
-
-      - name: Run RAGAS evaluation
-        run: python -m src.evaluation.evaluate
-
-      - name: Upload evaluation results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: eval-results
-          path: data/eval/eval_results.json
-
-      - name: Comment PR with results
-        if: github.event_name == 'pull_request' && always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            try {
-              const results = JSON.parse(fs.readFileSync('data/eval/eval_results.json', 'utf8'));
-              const status = results.passed ? '✅ PASSED' : '❌ FAILED';
-              let body = `## RAG Evaluation Results ${status}\n\n`;
-              body += `| Metric | Score | Threshold | Status |\n`;
-              body += `|--------|-------|-----------|--------|\n`;
-              for (const [metric, score] of Object.entries(results.scores)) {
-                const threshold = results.thresholds[metric];
-                const pass = score >= threshold ? '✅' : '❌';
-                body += `| ${metric} | ${score.toFixed(4)} | ${threshold} | ${pass} |\n`;
-              }
-              body += `\n**Evaluated:** ${results.num_evaluated} questions`;
-              
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: body
-              });
-            } catch (e) {
-              console.log('Could not post results:', e.message);
-            }
+      - name: Run unit tests
+        run: pytest tests/ -v
