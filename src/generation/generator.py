@@ -57,8 +57,8 @@ Student Question: {query}
 
 Please answer the question based ONLY on the context above. Include citations."""
     
-    llm = ChatOllama(model="qwen2.5:7b", temperature=0)
-    
+    # llm = ChatOllama(model="qwen2.5:7b", temperature=0)
+    llm = ChatOllama(model="gemma4", temperature=0)
     response = llm.invoke([
         SystemMessage(content=system_prompt),
         HumanMessage(content=user_message),
