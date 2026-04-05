@@ -35,8 +35,8 @@ def verify_answer_against_context(
         f"[Chunk {i+1}]: {chunk['content']}" 
         for i, chunk in enumerate(context_chunks)
     )
-    
-    llm = ChatOllama(model="qwen2.5:7b", temperature=0)
+    llm = ChatOllama(model="gemma4", temperature=0)
+    # llm = ChatOllama(model="qwen2.5:7b", temperature=0)
     
     response = llm.invoke([
         SystemMessage(content=VERIFICATION_PROMPT),

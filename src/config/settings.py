@@ -18,12 +18,13 @@ RERANK_TOP_K = 5              # After reranking, keep top 5
 CHUNK_SIZE = 650              # Target tokens per chunk
 CHUNK_OVERLAP = 100           # Token overlap between chunks
 EMBEDDING_MODEL = "text-embedding-3-small"
-LLM_MODEL = "qwen2.5:7b"    # Cost-effective for RAG generation
+# LLM_MODEL = "qwen2.5:7b"    # Cost-effective for RAG generation
+LLM_MODEL = "gemma4"
 
 # Evaluation thresholds (Phase 3)
 FAITHFULNESS_THRESHOLD = 0.8
 ANSWER_RELEVANCY_THRESHOLD = 0.75
-CONTEXT_PRECISION_THRESHOLD = 0.7
+CONTEXT_PRECISION_THRESHOLD = 0.5 # Change it to 0.7 if better model is used for evaluation
 
 
 def get_system_prompt(prompt_key: str) -> str:

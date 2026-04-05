@@ -47,7 +47,10 @@ def chunk_documents(documents: list, chunker=None) -> list:
         chunk.metadata["token_count"] = len(encoding.encode(chunk.page_content))
     
     print(f"Created {len(chunks)} chunks from {len(documents)} pages")
-    
+
+    if not chunks:
+        return chunks
+
     # Print token distribution for verification
     token_counts = [c.metadata["token_count"] for c in chunks]
     print(f"Token range: {min(token_counts)} - {max(token_counts)}, "
