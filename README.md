@@ -84,13 +84,17 @@ pytest tests/ -v
 
 ## Project Structure
 
-src/
-├── ingestion/      # PDF loading, token-aware chunking, embedding
-├── retrieval/      # BM25, vector search, hybrid RRF fusion, Cohere reranking
-├── generation/     # LLM answer generation, citation verification
-├── config/         # Version-controlled prompts (YAML) and settings
-├── evaluation/     # RAGAS evaluation pipeline
-└── api/            # FastAPI endpoint (chatbot interface — coming soon)
+| Directory | Purpose |
+|-----------|---------|
+| `src/ingestion/` | PDF loading, token-aware chunking, embedding |
+| `src/retrieval/` | BM25, vector search, hybrid RRF fusion, Cohere reranking |
+| `src/generation/` | LLM answer generation, citation verification |
+| `src/config/` | Version-controlled prompts (YAML) and settings |
+| `src/evaluation/` | RAGAS evaluation pipeline |
+| `src/api/` | FastAPI endpoint (chatbot interface — coming soon) |
+| `data/raw/` | Source PDF documents |
+| `data/eval/` | Golden evaluation dataset |
+| `tests/` | Unit tests |
 
 ## How It Works
 
