@@ -228,3 +228,4 @@ data/raw/*.pdf
 
 # Weaviate data
 weaviate_data/
+.DS_Store
