@@ -42,6 +42,6 @@ query_templates:
     description: "How to format retrieved chunks for the LLM context window"
     template: |
       --- Context Chunk {chunk_number} ---
-      Source: {source_file}, Page {page}
+      Source: {source}
       Content: {content}
       ---

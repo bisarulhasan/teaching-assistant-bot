@@ -53,22 +53,24 @@ def hybrid_search(
     client: weaviate.WeaviateClient,
     bm25_retriever: BM25Retriever,
     top_k: int = 10,
+    filters: dict | None = None,
 ) -> list[dict]:
     """
     Perform hybrid search combining BM25 and vector retrieval.
-    
+
     Args:
         query: The search query.
         client: Weaviate client for vector search.
         bm25_retriever: Initialized BM25Retriever instance.
         top_k: Number of final results after fusion.
-        
+        filters: Optional {year, subject, course} to scope retrieval.
+
     Returns:
         Fused and ranked list of results.
     """
     # Get results from both retrievers
-    vector_results = vector_search(query, client, top_k=top_k)
-    bm25_results = bm25_retriever.search(query, top_k=top_k)
+    vector_results = vector_search(query, client, top_k=top_k, filters=filters)
+    bm25_results = bm25_retriever.search(query, top_k=top_k, filters=filters)
     
     print(f"Vector results: {len(vector_results)}, BM25 results: {len(bm25_results)}")
     

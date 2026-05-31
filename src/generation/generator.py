@@ -1,24 +1,46 @@
 """Generate answers from retrieved context using an LLM with citation enforcement."""
 
-from langchain_ollama import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage
-from src.config.settings import get_system_prompt, get_query_template, LLM_MODEL
+from src.config.settings import get_system_prompt, get_query_template
+from src.generation.llm_client import get_chat_llm
+
+
+def source_label(metadata: dict) -> str:
+    """Human-readable citation, e.g.
+    'Mathematics Standard (Year 11), Ch 1 Earning money, §1G, p.38'."""
+    subject = metadata.get("subject") or ""
+    course = metadata.get("course") or ""
+    year = metadata.get("year") or 0
+    book = " ".join(p for p in (subject, course) if p) or metadata.get("source_file", "Unknown")
+    if year:
+        book = f"{book} (Year {year})"
+
+    parts = [book]
+    if metadata.get("chapter"):
+        ch = f"Ch {metadata['chapter']}"
+        if metadata.get("chapter_title"):
+            ch += f" {metadata['chapter_title']}"
+        parts.append(ch)
+    if metadata.get("section"):
+        parts.append(f"§{metadata['section']}")
+    if metadata.get("page"):
+        parts.append(f"p.{metadata['page']}")
+    return ", ".join(parts)
 
 
 def format_context(retrieved_chunks: list[dict]) -> str:
     """Format retrieved chunks into a context string for the LLM."""
     template = get_query_template("format_context")
     context_parts = []
-    
+
     for i, chunk in enumerate(retrieved_chunks, 1):
         formatted = template.format(
             chunk_number=i,
-            source_file=chunk["metadata"].get("source_file", "Unknown"),
-            page=chunk["metadata"].get("page", "?"),
+            source=source_label(chunk["metadata"]),
             content=chunk["content"],
         )
         context_parts.append(formatted)
-    
+
     return "\n".join(context_parts)
 
 
@@ -57,26 +79,30 @@ Student Question: {query}
 
 Please answer the question based ONLY on the context above. Include citations."""
     
-    # llm = ChatOllama(model="qwen2.5:7b", temperature=0)
-    llm = ChatOllama(model="gemma4", temperature=0)
+    llm = get_chat_llm(temperature=0)
     response = llm.invoke([
         SystemMessage(content=system_prompt),
         HumanMessage(content=user_message),
     ])
     
-    # Extract unique sources used
+    # Extract unique sources used (one per page), with rich citation metadata
     sources = []
     seen = set()
     for chunk in retrieved_chunks:
-        source_key = (
-            chunk["metadata"].get("source_file", ""),
-            chunk["metadata"].get("page", 0),
-        )
+        m = chunk["metadata"]
+        source_key = (m.get("source_file", ""), m.get("page", 0))
         if source_key not in seen:
             seen.add(source_key)
             sources.append({
-                "file": source_key[0],
-                "page": source_key[1],
+                "file": m.get("source_file", ""),
+                "page": m.get("page", 0),
+                "year": m.get("year", 0),
+                "subject": m.get("subject", ""),
+                "course": m.get("course", ""),
+                "chapter": m.get("chapter", 0),
+                "chapter_title": m.get("chapter_title", ""),
+                "section": m.get("section", ""),
+                "label": source_label(m),
             })
     
     return {
