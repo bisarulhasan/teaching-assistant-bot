@@ -38,10 +38,14 @@ def chunk_documents(documents: list, chunker=None) -> list:
         chunker = create_chunker()
     
     chunks = chunker.split_documents(documents)
-    
-    # Add chunk IDs and token counts for traceability
+
+    # Drop degenerate fragments (e.g. a lone heading left after boilerplate
+    # stripping) — too small to be useful context and only add retrieval noise.
     encoding = tiktoken.encoding_for_model("gpt-4o")
-    
+    min_tokens = 20
+    chunks = [c for c in chunks if len(encoding.encode(c.page_content)) >= min_tokens]
+
+    # Add chunk IDs and token counts for traceability
     for i, chunk in enumerate(chunks):
         chunk.metadata["chunk_id"] = f"chunk_{i:04d}"
         chunk.metadata["token_count"] = len(encoding.encode(chunk.page_content))

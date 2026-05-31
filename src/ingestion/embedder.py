@@ -33,6 +33,14 @@ def create_collection(client: weaviate.WeaviateClient, delete_existing: bool = F
                 Property(name="page", data_type=DataType.INT),
                 Property(name="chunk_id", data_type=DataType.TEXT),
                 Property(name="token_count", data_type=DataType.INT),
+                # Student-facing filters
+                Property(name="year", data_type=DataType.INT),
+                Property(name="subject", data_type=DataType.TEXT),
+                Property(name="course", data_type=DataType.TEXT),
+                # Citation context
+                Property(name="chapter", data_type=DataType.INT),
+                Property(name="chapter_title", data_type=DataType.TEXT),
+                Property(name="section", data_type=DataType.TEXT),
             ],
         )
         print(f"Created collection: {COLLECTION_NAME}")
@@ -68,6 +76,12 @@ def embed_and_store(chunks: list, client: weaviate.WeaviateClient):
                     "page": chunk.metadata.get("page", 0),
                     "chunk_id": chunk.metadata.get("chunk_id", ""),
                     "token_count": chunk.metadata.get("token_count", 0),
+                    "year": chunk.metadata.get("year", 0),
+                    "subject": chunk.metadata.get("subject", ""),
+                    "course": chunk.metadata.get("course", ""),
+                    "chapter": chunk.metadata.get("chapter", 0),
+                    "chapter_title": chunk.metadata.get("chapter_title", ""),
+                    "section": chunk.metadata.get("section", ""),
                 },
                 vector=vector,
             )

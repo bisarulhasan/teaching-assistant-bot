@@ -26,6 +26,12 @@ class BM25Retriever:
                     "source_file": obj.properties.get("source_file", ""),
                     "page": obj.properties.get("page", 0),
                     "chunk_id": obj.properties.get("chunk_id", ""),
+                    "year": obj.properties.get("year", 0),
+                    "subject": obj.properties.get("subject", ""),
+                    "course": obj.properties.get("course", ""),
+                    "chapter": obj.properties.get("chapter", 0),
+                    "chapter_title": obj.properties.get("chapter_title", ""),
+                    "section": obj.properties.get("section", ""),
                 },
             }
             self.documents.append(doc)
