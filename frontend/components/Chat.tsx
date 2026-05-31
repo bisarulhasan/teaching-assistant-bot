@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Markdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { ask, type ClassOption, type Source } from "@/lib/api";
 import Mascot from "./Mascot";
 
@@ -23,6 +26,16 @@ const STARTERS = [
 /** Strip the inline [Source: …] tags — we show sources as chips instead. */
 function cleanAnswer(text: string): string {
   return text.replace(/\s*\[Source:[^\]]*\]/g, "").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/** Normalize the LLM's LaTeX delimiters to the $/$$ that remark-math expects.
+ * Uses function replacements so literal `$` in the output isn't mis-escaped. */
+function normalizeMath(text: string): string {
+  return text
+    .replace(/\\\[/g, () => "$$")
+    .replace(/\\\]/g, () => "$$")
+    .replace(/\\\(/g, () => "$")
+    .replace(/\\\)/g, () => "$");
 }
 
 export default function Chat({
@@ -149,6 +162,9 @@ export default function Chat({
         <p className="mt-2 text-center text-xs text-ink-soft/70">
           Noor only answers from your textbooks. Always double-check with your teacher.
         </p>
+        <p className="mt-1 text-center text-xs text-ink-soft/60">
+          Made with <span className="text-coral">♥</span> by Bisar
+        </p>
       </div>
     </div>
   );
@@ -164,6 +180,7 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
         {STARTERS.map((s, i) => (
           <button
             key={s}
+            data-starter
             onClick={() => onPick(s)}
             className="animate-pop rounded-full border-2 border-ink/10 bg-white/60 px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:border-sun hover:text-ink"
             style={{ animationDelay: `${i * 70}ms` }}
@@ -194,13 +211,21 @@ function PipBubble({ msg }: { msg: Msg }) {
       </div>
       <div className="max-w-[85%] space-y-3">
         <div
-          className={`whitespace-pre-wrap rounded-[var(--radius-blob)] rounded-tl-md border-2 px-4 py-3 leading-relaxed shadow-[0_3px_0_rgba(43,42,38,0.06)] ${
+          className={`rounded-[var(--radius-blob)] rounded-tl-md border-2 px-4 py-3 leading-relaxed shadow-[0_3px_0_rgba(43,42,38,0.06)] ${
             msg.error
-              ? "border-coral/30 bg-coral/5 text-coral-deep"
+              ? "whitespace-pre-wrap border-coral/30 bg-coral/5 text-coral-deep"
               : "border-ink/8 bg-white text-ink"
           }`}
         >
-          {msg.text}
+          {msg.error ? (
+            msg.text
+          ) : (
+            <div className="md">
+              <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                {normalizeMath(msg.text)}
+              </Markdown>
+            </div>
+          )}
         </div>
 
         {msg.supported != null && !msg.error && (

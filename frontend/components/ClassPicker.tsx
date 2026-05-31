@@ -94,6 +94,10 @@ export default function ClassPicker({
             </Choice>
           ))}
       </div>
+
+      <p className="fixed inset-x-0 bottom-5 text-center text-xs text-ink-soft/60">
+        Made with <span className="text-coral">♥</span> by Bisar
+      </p>
     </div>
   );
 }
