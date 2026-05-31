@@ -229,3 +229,7 @@ data/raw/*.pdf
 # Weaviate data
 weaviate_data/
 .DS_Store
+
+# Personal / local-only (never push to public repo)
+About Me/
+.claude/launch.json
