@@ -17,10 +17,12 @@ type Msg = {
   error?: boolean;
 };
 
+// Starters PREFILL the composer with a lead-in and focus it, so the student
+// always names a topic — sending these as-is would give the bot no topic.
 const STARTERS = [
-  "Explain this topic simply",
-  "Give me a worked example",
-  "What's the formula I need?",
+  { label: "Explain a topic", lead: "Explain " },
+  { label: "Worked example", lead: "Give me a worked example of " },
+  { label: "Find a formula", lead: "What's the formula for " },
 ];
 
 /** Strip the inline [Source: …] tags — we show sources as chips instead. */
@@ -49,7 +51,19 @@ export default function Chat({
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const idRef = useRef(0);
+
+  function compose(lead: string) {
+    setInput(lead);
+    requestAnimationFrame(() => {
+      const el = inputRef.current;
+      if (el) {
+        el.focus();
+        el.setSelectionRange(lead.length, lead.length);
+      }
+    });
+  }
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -115,7 +129,7 @@ export default function Chat({
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 space-y-5 overflow-y-auto pb-4 pt-2">
-        {messages.length === 0 && <EmptyState onPick={send} />}
+        {messages.length === 0 && <EmptyState onCompose={compose} />}
         {messages.map((m) =>
           m.role === "user" ? (
             <UserBubble key={m.id} text={m.text} />
@@ -136,6 +150,7 @@ export default function Chat({
           className="flex items-end gap-2 rounded-[var(--radius-blob)] border-2 border-ink/10 bg-white/85 p-2 shadow-[0_6px_0_rgba(43,42,38,0.08)] backdrop-blur transition-colors focus-within:border-teal"
         >
           <textarea
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -170,22 +185,25 @@ export default function Chat({
   );
 }
 
-function EmptyState({ onPick }: { onPick: (q: string) => void }) {
+function EmptyState({ onCompose }: { onCompose: (lead: string) => void }) {
   return (
     <div className="animate-pop py-10 text-center">
       <p className="font-[family-name:var(--font-display)] text-2xl font-light text-ink">
         What shall we figure out today?
       </p>
+      <p className="mx-auto mt-2 max-w-sm text-sm text-ink-soft">
+        Name a topic and I&rsquo;ll take it from there — try one of these to get going:
+      </p>
       <div className="mt-5 flex flex-wrap justify-center gap-2">
         {STARTERS.map((s, i) => (
           <button
-            key={s}
+            key={s.label}
             data-starter
-            onClick={() => onPick(s)}
+            onClick={() => onCompose(s.lead)}
             className="animate-pop rounded-full border-2 border-ink/10 bg-white/60 px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:border-sun hover:text-ink"
             style={{ animationDelay: `${i * 70}ms` }}
           >
-            {s}
+            {s.label} →
           </button>
         ))}
       </div>
