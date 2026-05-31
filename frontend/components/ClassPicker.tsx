@@ -47,7 +47,7 @@ export default function ClassPicker({
         className="mt-6 font-[family-name:var(--font-display)] text-5xl font-light tracking-tight text-ink animate-rise sm:text-6xl"
         style={{ animationDelay: "120ms", fontFeatureSettings: '"ss01"' }}
       >
-        Hi, I&rsquo;m Pip.
+        Hi, I&rsquo;m Noor.
       </h1>
       <p
         className="mt-3 max-w-md text-lg text-ink-soft animate-rise"

@@ -1,4 +1,4 @@
-/** Pip — a friendly geometric open-book buddy. Pure SVG, no deps. */
+/** Noor — a friendly geometric open-book buddy. Pure SVG, no deps. */
 export default function Mascot({
   size = 96,
   bob = false,
@@ -15,7 +15,7 @@ export default function Mascot({
       viewBox="0 0 120 120"
       fill="none"
       role="img"
-      aria-label="Pip the textbook buddy"
+      aria-label="Noor the textbook buddy"
       className={`${bob ? "animate-bob" : ""} ${className}`}
       style={{ transformOrigin: "center" }}
     >
@@ -38,12 +38,12 @@ export default function Mascot({
       </g>
       {/* smile */}
       <path d="M50 74 Q60 82 70 74" stroke="var(--color-ink)" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-      {/* little plus antenna */}
-      <line x1="60" y1="26" x2="60" y2="14" stroke="var(--color-sun)" strokeWidth="3.5" strokeLinecap="round" />
-      <g stroke="var(--color-sun)" strokeWidth="3.5" strokeLinecap="round">
-        <line x1="54" y1="11" x2="66" y2="11" />
-        <line x1="60" y1="5" x2="60" y2="17" />
-      </g>
+      {/* antenna with a friendly spark-of-an-idea sparkle */}
+      <line x1="60" y1="26" x2="60" y2="16" stroke="var(--color-sun)" strokeWidth="3.5" strokeLinecap="round" />
+      <path
+        d="M60 3 L62.2 9.2 L68 11 L62.2 12.8 L60 19 L57.8 12.8 L52 11 L57.8 9.2 Z"
+        fill="var(--color-sun)"
+      />
       <defs>
         <linearGradient id="sheen" x1="20" y1="26" x2="100" y2="94" gradientUnits="userSpaceOnUse">
           <stop stopColor="#ffffff" />

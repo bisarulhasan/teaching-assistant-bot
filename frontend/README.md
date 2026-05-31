@@ -1,7 +1,7 @@
-# Pip — Teaching Assistant Frontend
+# Noor — Teaching Assistant Frontend
 
 Friendly student-facing UI for the RAG teaching-assistant bot. Students pick
-their year / subject / course, then chat with **Pip**, who answers only from
+their year / subject / course, then chat with **Noor**, who answers only from
 their own textbooks and shows the exact chapter, section and page.
 
 Built with Next.js (App Router) + Tailwind v4. Talks to the FastAPI backend in

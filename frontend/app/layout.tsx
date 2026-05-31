@@ -15,9 +15,9 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pip · Ask your textbook",
+  title: "Noor · Ask your textbook",
   description:
-    "Pip is your friendly study buddy — ask anything from your own school textbooks and get answers with the exact page they came from.",
+    "Noor is your friendly study buddy — ask anything from your own school textbooks and get answers with the exact page they came from.",
 };
 
 export default function RootLayout({

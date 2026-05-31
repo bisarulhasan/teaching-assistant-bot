@@ -6,7 +6,7 @@ import ClassPicker from "@/components/ClassPicker";
 import Chat from "@/components/Chat";
 import Mascot from "@/components/Mascot";
 
-const STORE_KEY = "pip.class";
+const STORE_KEY = "noor.class";
 
 export default function Home() {
   const [catalog, setCatalog] = useState<ClassOption[] | null>(null);

@@ -84,7 +84,7 @@ export default function Chat({
         <div className="flex items-center gap-3">
           <Mascot size={44} />
           <div className="leading-tight">
-            <p className="font-[family-name:var(--font-display)] text-xl text-ink">Pip</p>
+            <p className="font-[family-name:var(--font-display)] text-xl text-ink">Noor</p>
             <p className="text-xs text-ink-soft">Ask your textbook</p>
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function Chat({
           </button>
         </form>
         <p className="mt-2 text-center text-xs text-ink-soft/70">
-          Pip only answers from your textbooks. Always double-check with your teacher.
+          Noor only answers from your textbooks. Always double-check with your teacher.
         </p>
       </div>
     </div>
