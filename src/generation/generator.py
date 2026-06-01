@@ -1,5 +1,7 @@
 """Generate answers from retrieved context using an LLM with citation enforcement."""
 
+import re
+
 from langchain_core.messages import SystemMessage, HumanMessage
 from src.config.settings import get_system_prompt, get_query_template
 from src.generation.llm_client import get_chat_llm
@@ -85,7 +87,9 @@ Please answer the question based ONLY on the context above. Include citations.""
         HumanMessage(content=user_message),
     ])
     
-    # Extract unique sources used (one per page), with rich citation metadata
+    answer_text = response.content
+
+    # Build unique sources (one per page) in relevance order
     sources = []
     seen = set()
     for chunk in retrieved_chunks:
@@ -105,8 +109,22 @@ Please answer the question based ONLY on the context above. Include citations.""
                 "label": source_label(m),
             })
     
+    # Show only the pages the answer actually cited inline (e.g. "[Source: …, p.13]"),
+    # so a one-page answer doesn't list five sources. Fall back to the top result
+    # when no parseable citation is present.
+    cited_pages = {
+        int(p) for p in re.findall(
+            r"\[Source:[^\]]*?(?:p\.?|page)\s*(\d+)", answer_text, re.IGNORECASE
+        )
+    }
+    if cited_pages:
+        used = [s for s in sources if s["page"] in cited_pages]
+        sources = used or sources[:1]
+    else:
+        sources = sources[:1]
+
     return {
-        "answer": response.content,
+        "answer": answer_text,
         "sources": sources,
         "context_used": retrieved_chunks,
     }

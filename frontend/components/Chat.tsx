@@ -31,11 +31,21 @@ function cleanAnswer(text: string): string {
 }
 
 /** Normalize the LLM's LaTeX delimiters to the $/$$ that remark-math expects.
- * Uses function replacements so literal `$` in the output isn't mis-escaped. */
+ * Anchors on the reliably-balanced `aligned` blocks and wraps each in $$,
+ * consuming any adjacent \[ \] — because a small model sometimes leaves those
+ * unbalanced, which would otherwise break display-math pairing. */
 function normalizeMath(text: string): string {
   return text
-    .replace(/\\\[/g, () => "$$")
-    .replace(/\\\]/g, () => "$$")
+    // each aligned block -> a $$ display block, eating any adjacent \[ \]
+    .replace(
+      /(?:\\\[)?\s*(\\begin\{aligned\}[\s\S]*?\\end\{aligned\})\s*(?:\\\])?/g,
+      (_, block) => `\n\n$$\n${block}\n$$\n\n`,
+    )
+    // remaining balanced single-line display \[ ... \] -> $$ ... $$
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_, inner) => `\n$$${inner}$$\n`)
+    // drop any stray unmatched \[ or \]
+    .replace(/\\\[|\\\]/g, "")
+    // inline \( ... \) -> $ ... $
     .replace(/\\\(/g, () => "$")
     .replace(/\\\)/g, () => "$");
 }
