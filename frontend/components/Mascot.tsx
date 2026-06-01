@@ -1,6 +1,7 @@
-/** Noor — a friendly glowing book-buddy. Pure SVG, no deps.
- * Deliberately avoids any antenna / vertical+horizontal shapes that could read
- * as a cross. "Noor" means light, so it sits in a soft halo with round glints. */
+/** Noor — a friendly mascot in Western Grammar School colours: a sky-blue shield
+ * with a red rim, navy face, a graduation cap and sun-yellow tassel. Blinking
+ * eyes + smile like a study buddy. Pure SVG, no deps. Original stylised mascot
+ * inspired by the WGS palette (not a reproduction of the school crest). */
 export default function Mascot({
   size = 96,
   bob = false,
@@ -10,6 +11,11 @@ export default function Mascot({
   bob?: boolean;
   className?: string;
 }) {
+  const SKY = "#62C6EC";
+  const RED = "#E5392E";
+  const NAVY = "#222B79";
+  const SUN = "#FDB81E";
+
   return (
     <svg
       width={size}
@@ -17,60 +23,64 @@ export default function Mascot({
       viewBox="0 0 120 120"
       fill="none"
       role="img"
-      aria-label="Noor the textbook buddy"
+      aria-label="Noor, the Western Grammar School study buddy"
       className={`${bob ? "animate-bob" : ""} ${className}`}
       style={{ transformOrigin: "center" }}
     >
-      {/* soft light halo */}
-      <circle cx="60" cy="58" r="46" fill="var(--color-sun)" opacity="0.16" />
-
-      {/* scattered round light-glints (asymmetric, never a cross) */}
-      <circle cx="99" cy="30" r="4.5" fill="var(--color-sun)" />
-      <circle cx="22" cy="44" r="3" fill="var(--color-sun)" />
-      <circle cx="96" cy="84" r="2.6" fill="var(--color-sun)" opacity="0.8" />
-      <circle cx="30" cy="86" r="2" fill="var(--color-coral)" opacity="0.7" />
+      {/* light glints */}
+      <circle cx="20" cy="46" r="3" fill={SUN} />
+      <circle cx="100" cy="54" r="2.6" fill={SKY} />
+      <circle cx="96" cy="86" r="2" fill={SUN} opacity="0.8" />
 
       {/* shadow */}
-      <ellipse cx="60" cy="106" rx="32" ry="5.5" fill="rgba(43,42,38,0.10)" />
+      <ellipse cx="60" cy="110" rx="28" ry="5" fill="rgba(34,43,121,0.12)" />
 
-      {/* body */}
-      <rect x="26" y="30" width="68" height="62" rx="22" fill="var(--color-teal)" />
-      <rect x="26" y="30" width="68" height="62" rx="22" fill="url(#sheen)" opacity="0.18" />
-
-      {/* a cheerful little curl on top (off-centre, organic — not an antenna) */}
+      {/* shield body */}
       <path
-        d="M64 31 C64 22 73 22 72 29"
-        stroke="var(--color-sun)"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        fill="none"
+        d="M32 44 C32 39 35 38.5 39 38.5 L81 38.5 C85 38.5 88 39 88 44 L88 68 C88 84 75 95 60 101 C45 95 32 84 32 68 Z"
+        fill="url(#shield)"
+        stroke={RED}
+        strokeWidth="4.5"
+        strokeLinejoin="round"
       />
+      {/* thin inner rim */}
+      <path
+        d="M37 46 C37 43 38.5 43 41 43 L79 43 C81.5 43 83 43 83 46 L83 67 C83 80 72 89 60 94 C48 89 37 80 37 67 Z"
+        fill="none"
+        stroke={NAVY}
+        strokeWidth="1.4"
+        opacity="0.5"
+      />
+      {/* sheen */}
+      <ellipse cx="50" cy="56" rx="20" ry="14" fill="#ffffff" opacity="0.14" />
+
+      {/* graduation cap */}
+      <path d="M49 33 L71 33 L74 40 C67 42 53 42 46 40 Z" fill={NAVY} />
+      <path d="M30 25 L60 16 L90 25 L60 34 Z" fill={NAVY} />
+      <path d="M30 25 L60 16 L90 25 L60 34 Z" fill="#ffffff" opacity="0.12" />
+      <circle cx="60" cy="25" r="2.6" fill={SUN} />
+      <path d="M60 25 Q86 23 87 29 L88 47" stroke={SUN} strokeWidth="2.2" strokeLinecap="round" fill="none" />
+      <circle cx="88" cy="49" r="3.2" fill={SUN} />
 
       {/* cheeks */}
-      <circle cx="42" cy="68" r="6" fill="var(--color-coral)" opacity="0.85" />
-      <circle cx="78" cy="68" r="6" fill="var(--color-coral)" opacity="0.85" />
+      <circle cx="44" cy="71" r="5.5" fill={RED} opacity="0.5" />
+      <circle cx="76" cy="71" r="5.5" fill={RED} opacity="0.5" />
 
       {/* eyes */}
       <g className="animate-blink" style={{ transformOrigin: "center" }}>
-        <circle cx="46" cy="56" r="6.5" fill="var(--color-ink)" />
-        <circle cx="74" cy="56" r="6.5" fill="var(--color-ink)" />
-        <circle cx="48" cy="54" r="2" fill="var(--color-paper)" />
-        <circle cx="76" cy="54" r="2" fill="var(--color-paper)" />
+        <circle cx="48" cy="61" r="6.5" fill={NAVY} />
+        <circle cx="72" cy="61" r="6.5" fill={NAVY} />
+        <circle cx="50" cy="59" r="2" fill="#ffffff" />
+        <circle cx="74" cy="59" r="2" fill="#ffffff" />
       </g>
 
       {/* smile */}
-      <path
-        d="M50 74 Q60 82 70 74"
-        stroke="var(--color-ink)"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        fill="none"
-      />
+      <path d="M50 77 Q60 85 70 77" stroke={NAVY} strokeWidth="3.5" strokeLinecap="round" fill="none" />
 
       <defs>
-        <linearGradient id="sheen" x1="26" y1="30" x2="94" y2="92" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#ffffff" />
-          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+        <linearGradient id="shield" x1="60" y1="38" x2="60" y2="101" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#7FD2F2" />
+          <stop offset="1" stopColor={SKY} />
         </linearGradient>
       </defs>
     </svg>
