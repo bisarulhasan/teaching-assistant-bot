@@ -59,7 +59,15 @@ def run_evaluation(
         print(f"  [{i+1}/{len(entries)}] {entry['question'][:60]}...")
         
         try:
-            result = rag_query(entry["question"], verify=False)
+            result = rag_query(
+                entry["question"],
+                verify=False,
+                filters={
+                    "year": entry.get("year"),
+                    "subject": entry.get("subject"),
+                    "course": entry.get("course"),
+                },
+            )
             
             questions.append(entry["question"])
             answers.append(result["answer"])

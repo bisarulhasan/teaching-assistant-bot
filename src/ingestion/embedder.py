@@ -65,26 +65,32 @@ def embed_and_store(chunks: list, client: weaviate.WeaviateClient):
     print(f"Generating embeddings for {len(texts)} chunks...")
     vectors = embeddings_model.embed_documents(texts)
     
-    # Batch insert into Weaviate
+    # Batch insert into Weaviate. A chunk is embedded once but stored once PER
+    # year it belongs to (e.g. a 7–8 PDHPE book → one object for year 7 and one
+    # for year 8, sharing the same vector). This keeps `year` a simple INT so the
+    # retrieval filter / catalog / frontend need no changes.
     print("Storing in Weaviate...")
     with collection.batch.dynamic() as batch:
         for chunk, vector in zip(chunks, vectors):
-            batch.add_object(
-                properties={
-                    "content": chunk.page_content,
-                    "source_file": chunk.metadata.get("source_file", "unknown"),
-                    "page": chunk.metadata.get("page", 0),
-                    "chunk_id": chunk.metadata.get("chunk_id", ""),
-                    "token_count": chunk.metadata.get("token_count", 0),
-                    "year": chunk.metadata.get("year", 0),
-                    "subject": chunk.metadata.get("subject", ""),
-                    "course": chunk.metadata.get("course", ""),
-                    "chapter": chunk.metadata.get("chapter", 0),
-                    "chapter_title": chunk.metadata.get("chapter_title", ""),
-                    "section": chunk.metadata.get("section", ""),
-                },
-                vector=vector,
-            )
+            m = chunk.metadata
+            years = m.get("years") or [m.get("year", 0)]
+            for year in years:
+                batch.add_object(
+                    properties={
+                        "content": chunk.page_content,
+                        "source_file": m.get("source_file", "unknown"),
+                        "page": m.get("page", 0),
+                        "chunk_id": m.get("chunk_id", ""),
+                        "token_count": m.get("token_count", 0),
+                        "year": year,
+                        "subject": m.get("subject", ""),
+                        "course": m.get("course", ""),
+                        "chapter": m.get("chapter", 0),
+                        "chapter_title": m.get("chapter_title", ""),
+                        "section": m.get("section", ""),
+                    },
+                    vector=vector,
+                )
     
     # Verify
     count = collection.aggregate.over_all(total_count=True).total_count

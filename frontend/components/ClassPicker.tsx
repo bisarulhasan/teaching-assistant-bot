@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ClassOption } from "@/lib/api";
 import Mascot from "./Mascot";
 
@@ -33,6 +33,14 @@ export default function ClassPicker({
       ).sort(),
     [catalog, year, subject],
   );
+
+  // Subjects without a senior stream (PDHPE, Commerce, Science) expose a single
+  // course (often ""), so skip the course step and complete automatically.
+  useEffect(() => {
+    if (year !== null && subject !== null && courses.length === 1) {
+      onPick({ year, subject, course: courses[0] });
+    }
+  }, [year, subject, courses, onPick]);
 
   const step = year === null ? 0 : subject === null ? 1 : 2;
   const prompts = ["Which year are you in?", "Pick your subject", "Which course?"];

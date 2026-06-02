@@ -12,13 +12,24 @@ import re
 # Footer boilerplate — these lines only ever appear in the page footer, so it is
 # safe to remove them wherever they occur.
 _FOOTER_PATTERNS = [
-    re.compile(r"^©\s.*\d{4}\s*$"),                       # © Powers et al. 2025
+    # CambridgeMATHS
+    re.compile(r"^©\s.*\d{4}\s*$"),                       # © Powers et al. 2025 / © Licensed ... 2025
     re.compile(r"^Cambridge University Press.*$", re.I),
     re.compile(r"^ISBN\s.*$", re.I),
     re.compile(r"^Photocopying is restricted.*$", re.I),
     re.compile(r"^CambridgeMATHS\b.*$", re.I),
     re.compile(r"^Year\s+\d{1,2}\s*$"),                   # lone "Year 11" footer line
     re.compile(r"^Uncorrected\b.*sample.*$", re.I),
+    # Jacaranda (Commerce)
+    re.compile(r"^Jacaranda\b.*$", re.I),
+    # PDHPE workbooks
+    re.compile(r"^Stage\s+\d\b.*Workbook\s*$", re.I),     # "Stage 4 PDHPE Student Workbook"
+    re.compile(r"^©\s*Licensed\b.*$", re.I),              # "© Licensed to Western Grammar School ..."
+    # Nelson (Investigating Science) print-production artefacts
+    re.compile(r"^CHAPTER\s+\d+\s*».*$", re.I),           # running header "CHAPTER 1 » ..."
+    re.compile(r"^\S*\.indd\s+\d+\s*$", re.I),            # "01_ISIF_HSC_11264_txt.indd 12"
+    re.compile(r"^\d{1,2}/\d{1,2}/\d{2,4}\s+\d{1,2}:\d{2}\s*[AP]M\s*$", re.I),  # timestamp
+    re.compile(r"^97[89]\d{10}\s*$"),                     # bare ISBN-13
 ]
 
 # Header band, in the order it appears at the top of a page.
@@ -27,19 +38,46 @@ _SECTION_CODE = re.compile(r"^(\d{1,2}[A-Z])$")          # 1G, 4B
 _CHAPTER = re.compile(r"^Chapter\s+(\d+)\s+(.+?)\s*$")
 
 
-def parse_source_metadata(filename: str) -> dict:
-    """Derive year / subject / course from a filename like
-    '11 Mathematics Standard textbook.pdf'.
+KNOWN_COURSES = {"standard", "advanced", "extension", "general"}
+
+
+def parse_source_metadata(book_name: str) -> dict:
+    """Derive years / subject / course from a book name (file stem OR folder name):
+
+      '11 Mathematics Standard textbook'  -> years [11], 'Mathematics', 'Standard'
+      '7:8 PDHPE textbook'                -> years [7, 8], 'PDHPE', ''
+      '9 Commerce textbook'               -> years [9], 'Commerce', ''
+      '12 Investigating Science textbook' -> years [12], 'Investigating Science', ''
+
+    'course' is only set when the trailing word is a known senior stream
+    (Standard/Advanced/Extension); otherwise the whole tail is the subject.
     """
-    stem = re.sub(r"\.pdf$", "", filename, flags=re.I)
-    m = re.match(r"^(\d{1,2})\s+([A-Za-z]+)\s+([A-Za-z]+)", stem)
+    stem = re.sub(r"\.pdf$", "", book_name, flags=re.I).strip()
+    stem = re.sub(r"\s+textbook$", "", stem, flags=re.I)
+    stem = re.sub(r"\s+lesson\s+\d+$", "", stem, flags=re.I)
+
+    m = re.match(r"^(\d{1,2}(?::\d{1,2})*)\s+(.+)$", stem)
+    if not m:
+        return {"years": [0], "subject": stem, "course": ""}
+
+    years = [int(y) for y in m.group(1).split(":")]
+    rest = m.group(2).split()
+    if rest and rest[-1].lower() in KNOWN_COURSES:
+        return {"years": years, "subject": " ".join(rest[:-1]), "course": rest[-1]}
+    return {"years": years, "subject": " ".join(rest), "course": ""}
+
+
+def parse_pdf_structure(filename: str) -> dict:
+    """Best-effort chapter number/title from a per-file name such as
+    'INVSC12_03_Chapter_3_Module_5_Scientific_investigations.pdf'."""
+    meta: dict = {}
+    m = re.search(r"chapter[_ ](\d+)", filename, re.I)
     if m:
-        return {
-            "year": int(m.group(1)),
-            "subject": m.group(2),
-            "course": m.group(3),
-        }
-    return {"year": 0, "subject": stem, "course": ""}
+        meta["chapter"] = int(m.group(1))
+        rest = re.search(r"chapter[_ ]\d+[_ ](.+?)(?:\.pdf)?$", filename, re.I)
+        if rest:
+            meta["chapter_title"] = rest.group(1).replace("_", " ").strip()
+    return meta
 
 
 def _strip_footer(lines: list[str]) -> list[str]:

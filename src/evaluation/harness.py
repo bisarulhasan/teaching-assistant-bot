@@ -33,7 +33,7 @@ from src.retrieval.reranker import rerank_chunks
 from src.generation.generator import generate_answer
 from src.config.settings import RETRIEVAL_TOP_K, RERANK_TOP_K
 
-DATASET = "data/eval/golden_maths.json"
+DATASET = "data/eval/golden_dataset.json"
 OUTPUT = "data/eval/harness_results.json"
 
 

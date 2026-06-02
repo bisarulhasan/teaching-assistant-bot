@@ -1,9 +1,14 @@
 """Load PDF documents and extract text content.
 
-Uses the `pdftotext` CLI (poppler) rather than PyPDFLoader: on these TeX-generated
-CambridgeMATHS PDFs, pypdf drops inter-word spaces (e.g. "Grosspay,deductionsfrom
-payandnetpay"), which wrecks both BM25 and embedding quality. pdftotext preserves
-word spacing and emits a clean per-page line structure that clean_page can parse.
+Uses the `pdftotext` CLI (poppler) rather than PyPDFLoader: on TeX-generated
+PDFs pypdf drops inter-word spaces, wrecking retrieval. pdftotext preserves
+word spacing and a clean per-page line structure that clean_page can parse.
+
+A "book" is either a single top-level PDF (e.g. "11 Mathematics Standard
+textbook.pdf") or a folder of PDFs (e.g. "12 Investigating Science textbook/"
+with one PDF per chapter). Book-level metadata (years/subject/course) is parsed
+from the file stem or the folder name; per-file chapter info (Science) is parsed
+from each PDF's own name.
 """
 
 import subprocess
@@ -11,7 +16,7 @@ from pathlib import Path
 
 from langchain_core.documents import Document
 
-from src.ingestion.clean import clean_page, parse_source_metadata
+from src.ingestion.clean import clean_page, parse_source_metadata, parse_pdf_structure
 
 
 def _pdf_to_pages(file_path: Path) -> list[str]:
@@ -22,53 +27,55 @@ def _pdf_to_pages(file_path: Path) -> list[str]:
         text=True,
         check=True,
     )
-    # pdftotext separates pages with a form-feed (\x0c)
-    return result.stdout.split("\x0c")
+    return result.stdout.split("\x0c")  # form-feed separates pages
 
 
-def load_pdf(file_path: str | Path) -> list:
+def load_pdf(file_path: str | Path, book_name: str | None = None) -> list:
     """
-    Load a PDF file and return a list of Document objects (one per page).
-
-    Strips per-page boilerplate (copyright/ISBN footer, running headers) and lifts
-    year/subject/course (from the filename) plus chapter/section (from the running
-    header) into each page's metadata so answers can cite where they came from.
+    Load one PDF into per-page Document objects.
 
     Args:
-        file_path: Path to the PDF file.
-
-    Returns:
-        List of LangChain Document objects with page_content and metadata.
+        file_path: path to the PDF.
+        book_name: the book this PDF belongs to (file stem for a single-PDF book,
+            or the folder name for a multi-PDF book). Drives years/subject/course.
     """
     file_path = Path(file_path)
     if not file_path.exists():
         raise FileNotFoundError(f"PDF not found: {file_path}")
 
-    source_meta = parse_source_metadata(file_path.name)
-    raw_pages = _pdf_to_pages(file_path)
+    book = book_name or file_path.stem
+    source_meta = parse_source_metadata(book)          # years, subject, course
+    struct_meta = parse_pdf_structure(file_path.name)  # chapter/title from filename (Science)
 
     documents = []
-    for i, raw in enumerate(raw_pages):
+    for i, raw in enumerate(_pdf_to_pages(file_path)):
         text, page_meta = clean_page(raw)
         if not text:
-            continue  # skip pages that were pure boilerplate / blank
-        metadata = {"source_file": file_path.name, "page": i + 1}
-        metadata.update(source_meta)
-        metadata.update(page_meta)
+            continue  # pure boilerplate / blank page
+        metadata = {"source_file": book, "page": i + 1}
+        metadata.update(source_meta)   # years, subject, course
+        metadata.update(page_meta)     # CambridgeMATHS chapter/section (if detected)
+        metadata.update(struct_meta)   # filename chapter/title — wins for Science
         documents.append(Document(page_content=text, metadata=metadata))
 
-    print(f"Loaded {len(documents)} pages from {file_path.name}")
+    print(f"Loaded {len(documents)} pages from {file_path.name} [{book}]")
     return documents
 
 
 def load_all_pdfs(directory: str | Path) -> list:
-    """Load all PDFs from a directory."""
+    """Load every book under a directory. Top-level PDFs are single-PDF books;
+    sub-folders are multi-PDF books (all their PDFs share the folder's metadata)."""
     directory = Path(directory)
     all_documents = []
 
-    for pdf_path in sorted(directory.glob("*.pdf")):
-        docs = load_pdf(pdf_path)
-        all_documents.extend(docs)
+    for entry in sorted(directory.iterdir()):
+        if entry.name.startswith("."):
+            continue
+        if entry.is_file() and entry.suffix.lower() == ".pdf":
+            all_documents.extend(load_pdf(entry, book_name=entry.stem))
+        elif entry.is_dir():
+            for pdf in sorted(entry.glob("*.pdf")):
+                all_documents.extend(load_pdf(pdf, book_name=entry.name))
 
     print(f"Total: {len(all_documents)} pages from {directory}")
     return all_documents
