@@ -1,87 +1,98 @@
 {
-  "version": "2.0.0",
-  "description": "Golden eval set for Noor across WGS books (maths, commerce, science, PDHPE). Pages/sections verified against the source PDFs + live retrieval. SEED — expand with teacher-authored questions. 'must_include' = short factual checkpoints in our own words, never copied textbook prose. 'ground_truth_answer' is a one-line summary (for optional RAGAS runs). PDHPE entries are workbook/activity based, so they are scored mainly on retrieval (page_hit).",
-  "created_by": "Bisar",
+  "version": "2.1.0",
+  "description": "Golden eval set for Noor across all WGS books (Maths Standard/Advanced, Commerce, Investigating Science, PDHPE Stage 4 & 5). Pages/sections verified against the source PDFs. 'must_include' = short factual checkpoints in our own words; 'ground_truth_answer' = concise reference answer (our words, not copied prose) used by RAGAS context-precision. PDHPE is workbook/activity based, so its answers are expected to be weaker.",
+  "created_by": "Bisar Ul Hasan",
   "entries": [
     {
-      "id": "m_001", "question": "What is the difference between gross pay and net pay?",
+      "id": "math_std_01", "question": "What is the difference between gross pay and net pay?",
       "year": 11, "subject": "Mathematics", "course": "Standard",
-      "expected_pages": [38], "expected_section": "1G",
-      "must_include": ["gross", "net", "deduction"],
+      "expected_pages": [38], "expected_section": "1G", "must_include": ["gross", "net", "deduction"],
       "ground_truth_answer": "Gross pay is total earnings before deductions; net pay is what remains after deductions are subtracted.",
       "category": "definition", "difficulty": "easy"
     },
     {
-      "id": "m_002", "question": "How do I calculate net pay from a gross wage and deductions?",
+      "id": "math_std_02", "question": "How do I calculate net pay from a gross wage and deductions?",
       "year": 11, "subject": "Mathematics", "course": "Standard",
-      "expected_pages": [38], "expected_section": "1G",
-      "must_include": ["net pay", "gross", "deduction"],
-      "ground_truth_answer": "Subtract all the deductions from the gross pay to get the net pay.",
+      "expected_pages": [38], "expected_section": "1G", "must_include": ["net pay", "gross", "deduction"],
+      "ground_truth_answer": "Subtract all of the deductions from the gross pay to get the net pay.",
       "category": "procedure", "difficulty": "easy"
     },
     {
-      "id": "m_003", "question": "What does expanding brackets mean in algebra?",
+      "id": "math_adv_01", "question": "What does expanding brackets mean in algebra?",
       "year": 11, "subject": "Mathematics", "course": "Advanced",
-      "expected_pages": [12], "expected_section": "1A",
-      "must_include": ["distribut", "bracket", "term"],
-      "ground_truth_answer": "Expanding brackets means multiplying the term outside the bracket by each term inside it.",
+      "expected_pages": [12], "expected_section": "1A", "must_include": ["distribut", "bracket", "term"],
+      "ground_truth_answer": "Expanding brackets means multiplying the term outside the bracket by each term inside it, then collecting like terms.",
       "category": "definition", "difficulty": "easy"
     },
     {
-      "id": "m_004", "question": "What are like and unlike terms?",
+      "id": "math_adv_02", "question": "What are like and unlike terms?",
       "year": 11, "subject": "Mathematics", "course": "Advanced",
-      "expected_pages": [12], "expected_section": "1A",
-      "must_include": ["like term", "combine"],
-      "ground_truth_answer": "Like terms have the same variables to the same powers and can be combined; unlike terms cannot.",
+      "expected_pages": [12], "expected_section": "1A", "must_include": ["like term", "combine"],
+      "ground_truth_answer": "Like terms have the same variables raised to the same powers and can be combined; unlike terms cannot.",
       "category": "definition", "difficulty": "easy"
     },
     {
-      "id": "m_005", "question": "Expand and simplify 3x(4x - 7).",
+      "id": "math_adv_03", "question": "Expand and simplify 3x(4x - 7).",
       "year": 11, "subject": "Mathematics", "course": "Advanced",
-      "expected_pages": [12], "expected_section": "1A",
-      "must_include": ["12x", "21x"],
+      "expected_pages": [12], "expected_section": "1A", "must_include": ["12x", "21x"],
       "ground_truth_answer": "3x(4x - 7) = 12x^2 - 21x.",
       "category": "computation", "difficulty": "medium"
     },
     {
-      "id": "m_006", "question": "How do I solve a quadratic inequality?",
+      "id": "math_adv_04", "question": "How do I solve a quadratic inequality?",
       "year": 11, "subject": "Mathematics", "course": "Advanced",
-      "expected_pages": [116], "expected_section": "4B",
-      "must_include": ["quadratic", "inequal"],
-      "ground_truth_answer": "Solve the related quadratic to find the boundary values, then choose the intervals where the inequality holds.",
+      "expected_pages": [116], "expected_section": "4B", "must_include": ["quadratic", "inequal"],
+      "ground_truth_answer": "Solve the related quadratic to find the boundary values, then test or sketch to choose the intervals where the inequality holds.",
       "category": "procedure", "difficulty": "medium"
     },
     {
-      "id": "c_001", "question": "How does product quality affect a consumer's buying decision?",
+      "id": "comm_01", "question": "How does product quality affect a consumer's buying decision?",
       "year": 9, "subject": "Commerce", "course": "",
-      "expected_pages": [6, 8],
-      "must_include": ["quality", "product"],
+      "expected_pages": [6, 8], "must_include": ["quality", "product"],
       "ground_truth_answer": "Consumers weigh quality against price; higher quality usually costs more but can last longer or carry added prestige.",
       "category": "definition", "difficulty": "easy"
     },
     {
-      "id": "s_001", "question": "How should quantitative data from an experiment be represented?",
+      "id": "comm_02", "question": "What consumer guarantees does the Competition and Consumer Act provide?",
+      "year": 9, "subject": "Commerce", "course": "",
+      "expected_pages": [20], "must_include": ["acceptable quality", "purpose"],
+      "ground_truth_answer": "Goods and services must be of acceptable quality, fit for their purpose, match their description, and match any sample or demonstration model.",
+      "category": "definition", "difficulty": "medium"
+    },
+    {
+      "id": "sci_01", "question": "How should quantitative data from an experiment be represented?",
       "year": 12, "subject": "Investigating Science", "course": "",
-      "expected_pages": [12], "chapter": 1,
-      "must_include": ["table", "data"],
+      "expected_pages": [12], "chapter": 1, "must_include": ["table", "data"],
       "ground_truth_answer": "Numerical data is best organised in a table with clear headings and units for the independent and dependent variables.",
       "category": "procedure", "difficulty": "easy"
     },
     {
-      "id": "s_002", "question": "What is the difference between an independent and a dependent variable?",
+      "id": "sci_02", "question": "What is the difference between an independent and a dependent variable?",
       "year": 12, "subject": "Investigating Science", "course": "",
-      "expected_pages": [2, 3, 4, 6], "chapter": 1,
-      "must_include": ["independent", "dependent"],
+      "expected_pages": [2, 3, 4, 6], "chapter": 1, "must_include": ["independent", "dependent"],
       "ground_truth_answer": "The independent variable is the one you change; the dependent variable is the one you measure in response.",
       "category": "definition", "difficulty": "easy"
     },
     {
-      "id": "p_001", "question": "In the migration unit, what would you take with you on a journey to freedom?",
+      "id": "sci_03", "question": "Why is sample size important for the reliability of an investigation?",
+      "year": 12, "subject": "Investigating Science", "course": "",
+      "expected_pages": [6], "chapter": 5, "must_include": ["sample size", "reliab"],
+      "ground_truth_answer": "A larger sample size reduces the influence of random chance, giving more reliable results.",
+      "category": "concept", "difficulty": "medium"
+    },
+    {
+      "id": "pdhpe_s4_01", "question": "In the migration unit, what would you take with you on a journey to freedom?",
       "year": 7, "subject": "PDHPE", "course": "",
-      "expected_pages": [39, 40, 41, 42, 43],
-      "must_include": ["freedom"],
+      "expected_pages": [39, 40, 41, 42, 43], "must_include": ["freedom"],
       "ground_truth_answer": "An activity asking students to list what they value and would carry when migrating or fleeing to a new country.",
       "category": "activity", "difficulty": "easy"
+    },
+    {
+      "id": "pdhpe_s5_01", "question": "What is BAC and what are the legal limits for drivers?",
+      "year": 9, "subject": "PDHPE", "course": "",
+      "expected_pages": [35], "must_include": ["blood alcohol", "0.05"],
+      "ground_truth_answer": "Blood alcohol concentration (BAC) is the amount of alcohol in the bloodstream. The limit is zero for L- and P-plate drivers and 0.05% for fully licensed drivers.",
+      "category": "definition", "difficulty": "easy"
     }
   ]
 }
