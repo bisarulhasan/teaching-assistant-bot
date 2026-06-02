@@ -119,7 +119,7 @@ export default function Chat({
       {/* Header */}
       <header className="flex items-center justify-between gap-3 py-4">
         <div className="flex items-center gap-3">
-          <Mascot size={44} />
+          <Mascot size={88} />
           <div className="leading-tight">
             <p className="font-[family-name:var(--font-display)] text-xl text-ink">Noor</p>
             <p className="text-xs text-ink-soft">Ask your textbook</p>
@@ -188,7 +188,15 @@ export default function Chat({
           Noor only answers from your textbooks. Always double-check with your teacher.
         </p>
         <p className="mt-1 text-center text-xs text-ink-soft/60">
-          Made with <span className="text-coral">♥</span> by Bisar
+          Made with <span className="text-coral">♥</span> by{" "}
+          <a
+            href="https://bisarhasan.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-ink-soft underline-offset-2 transition-colors hover:text-coral hover:underline"
+          >
+            Bisar Ul Hasan
+          </a>
         </p>
       </div>
     </div>
@@ -235,7 +243,7 @@ function PipBubble({ msg }: { msg: Msg }) {
   return (
     <div className="flex animate-pop items-start gap-3">
       <div className="mt-1 shrink-0">
-        <Mascot size={36} />
+        <Mascot size={72} />
       </div>
       <div className="max-w-[85%] space-y-3">
         <div

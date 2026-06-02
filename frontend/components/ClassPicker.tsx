@@ -104,7 +104,15 @@ export default function ClassPicker({
       </div>
 
       <p className="mt-12 text-center text-xs text-ink-soft/60">
-        Made with <span className="text-coral">♥</span> by Bisar
+        Made with <span className="text-coral">♥</span> by{" "}
+        <a
+          href="https://bisarhasan.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-ink-soft underline-offset-2 transition-colors hover:text-coral hover:underline"
+        >
+          Bisar Ul Hasan
+        </a>
       </p>
     </div>
   );
