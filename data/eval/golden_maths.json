@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "description": "Golden eval set for Noor — NSW Year 11 CambridgeMATHS (Standard + Advanced). SEED: every entry's pages/sections are verified against live retrieval. Expand with teacher-authored questions; keep 'must_include' as short factual checkpoints, never copied textbook prose.",
+  "created_by": "Bisar",
+  "books": [
+    "11 Mathematics Standard textbook.pdf",
+    "11 Mathematics Advanced textbook.pdf"
+  ],
+  "entries": [
+    {
+      "id": "m_001",
+      "question": "What is the difference between gross pay and net pay?",
+      "year": 11, "subject": "Mathematics", "course": "Standard",
+      "expected_pages": [38], "expected_section": "1G",
+      "must_include": ["gross", "net", "deduction"],
+      "category": "definition", "difficulty": "easy"
+    },
+    {
+      "id": "m_002",
+      "question": "How do I calculate net pay from a gross wage and deductions?",
+      "year": 11, "subject": "Mathematics", "course": "Standard",
+      "expected_pages": [38], "expected_section": "1G",
+      "must_include": ["net pay", "gross", "deduction"],
+      "category": "procedure", "difficulty": "easy"
+    },
+    {
+      "id": "m_003",
+      "question": "What does expanding brackets mean in algebra?",
+      "year": 11, "subject": "Mathematics", "course": "Advanced",
+      "expected_pages": [12], "expected_section": "1A",
+      "must_include": ["distribut", "bracket", "term"],
+      "category": "definition", "difficulty": "easy"
+    },
+    {
+      "id": "m_004",
+      "question": "What are like and unlike terms?",
+      "year": 11, "subject": "Mathematics", "course": "Advanced",
+      "expected_pages": [12], "expected_section": "1A",
+      "must_include": ["like term", "combine"],
+      "category": "definition", "difficulty": "easy"
+    },
+    {
+      "id": "m_005",
+      "question": "Expand and simplify 3x(4x - 7).",
+      "year": 11, "subject": "Mathematics", "course": "Advanced",
+      "expected_pages": [12], "expected_section": "1A",
+      "must_include": ["12x", "21x"],
+      "category": "computation", "difficulty": "medium"
+    },
+    {
+      "id": "m_006",
+      "question": "How do I solve a quadratic inequality?",
+      "year": 11, "subject": "Mathematics", "course": "Advanced",
+      "expected_pages": [116], "expected_section": "4B",
+      "must_include": ["quadratic", "inequal"],
+      "category": "procedure", "difficulty": "medium"
+    }
+  ]
+}
