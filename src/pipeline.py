@@ -2,7 +2,12 @@
 
 from src.ingestion.loader import load_all_pdfs
 from src.ingestion.chunker import chunk_documents
-from src.ingestion.embedder import get_weaviate_client, create_collection, embed_and_store
+from src.ingestion.embedder import (
+    get_weaviate_client,
+    get_vector_client,
+    create_collection,
+    embed_and_store,
+)
 from src.retrieval.vector_retriever import vector_search
 from src.retrieval.bm25_retriever import BM25Retriever
 from src.retrieval.hybrid_retriever import hybrid_search
@@ -54,7 +59,7 @@ def query(
     """
     own_client = client is None
     if own_client:
-        client = get_weaviate_client()
+        client = get_vector_client()
     try:
         # Step 1: Retrieve candidates
         if use_hybrid:

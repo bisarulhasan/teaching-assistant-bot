@@ -3,7 +3,6 @@
 import os
 import weaviate
 from weaviate.classes.config import Configure, Property, DataType
-from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,6 +15,15 @@ def get_weaviate_client() -> weaviate.WeaviateClient:
     client = weaviate.connect_to_local()
     print(f"Weaviate connected: {client.is_ready()}")
     return client
+
+
+def get_vector_client():
+    """Return the active vector-store client (Weaviate or Qdrant) per VECTOR_DB."""
+    from src.config.settings import VECTOR_DB
+    if VECTOR_DB == "qdrant":
+        from src.retrieval.qdrant_store import get_client
+        return get_client()
+    return get_weaviate_client()
 
 
 def create_collection(client: weaviate.WeaviateClient, delete_existing: bool = False):
@@ -54,6 +62,7 @@ def embed_and_store(chunks: list, client: weaviate.WeaviateClient):
     
     Uses batch imports for efficiency.
     """
+    from langchain_huggingface import HuggingFaceEmbeddings  # lazy: PyTorch only when ingesting to Weaviate
     embeddings_model = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2",
     model_kwargs={"device": "mps"},  # Uses your M1 GPU

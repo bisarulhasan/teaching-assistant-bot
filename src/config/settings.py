@@ -14,6 +14,9 @@ with open(CONFIG_PATH) as f:
     PROMPT_CONFIG = yaml.safe_load(f)
 
 # Retrieval settings
+# Vector store backend: "weaviate" (local, default) or "qdrant" (hosted, 24/7).
+VECTOR_DB = os.getenv("VECTOR_DB", "weaviate")
+
 RETRIEVAL_TOP_K = 10          # Initial retrieval count
 RERANK_TOP_K = 5              # After reranking, keep top 5
 CHUNK_SIZE = 650              # Target tokens per chunk

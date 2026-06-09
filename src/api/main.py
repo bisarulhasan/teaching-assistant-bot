@@ -15,10 +15,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from src.config.settings import LLM_MODEL
-from src.ingestion.embedder import get_weaviate_client
+from src.config.settings import LLM_MODEL, VECTOR_DB
+from src.ingestion.embedder import get_vector_client
 from src.retrieval.bm25_retriever import BM25Retriever
-from src.retrieval.vector_retriever import get_embeddings_model
 from src.pipeline import query as run_query
 
 
@@ -55,9 +54,14 @@ class AskResponse(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Warm the embedding model and open shared resources once.
-    get_embeddings_model()
-    app.state.client = get_weaviate_client()
+    # Warm the active embedding model and open shared resources once.
+    if VECTOR_DB == "qdrant":
+        from src.ingestion.embeddings import embed_query
+        embed_query("warmup")
+    else:
+        from src.retrieval.vector_retriever import get_embeddings_model
+        get_embeddings_model()
+    app.state.client = get_vector_client()
     app.state.bm25 = BM25Retriever(app.state.client)
     try:
         yield

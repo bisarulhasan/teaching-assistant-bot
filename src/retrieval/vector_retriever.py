@@ -4,7 +4,6 @@ from functools import lru_cache
 
 import weaviate
 from weaviate.classes.query import Filter
-from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,8 +12,10 @@ COLLECTION_NAME = "TeachingAssistantChunks"
 
 
 @lru_cache(maxsize=1)
-def get_embeddings_model() -> HuggingFaceEmbeddings:
-    """Load the embedding model once and reuse it (loading is ~seconds)."""
+def get_embeddings_model():
+    """Load the (Weaviate-path) HuggingFace embedding model once. Imported lazily
+    so the Qdrant/Render path never pulls in PyTorch."""
+    from langchain_huggingface import HuggingFaceEmbeddings
     return HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2",
         model_kwargs={"device": "mps"},
@@ -53,6 +54,12 @@ def vector_search(
     Returns:
         List of dicts with 'content', 'metadata', and 'score' keys.
     """
+    from src.config.settings import VECTOR_DB
+    if VECTOR_DB == "qdrant":
+        from src.ingestion.embeddings import embed_query
+        from src.retrieval.qdrant_store import vector_search as _qdrant_search
+        return _qdrant_search(embed_query(query), client, top_k=top_k, filters=filters)
+
     query_vector = get_embeddings_model().embed_query(query)
 
     collection = client.collections.get(COLLECTION_NAME)

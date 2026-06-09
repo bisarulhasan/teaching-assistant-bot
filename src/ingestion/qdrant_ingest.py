@@ -45,3 +45,11 @@ def ingest_to_qdrant(client, data_dir: str = "data/raw", recreate: bool = True, 
         upsert(client, points[i : i + 256])
     print(f"Stored {len(points)} points.")
     return len(points)
+
+
+if __name__ == "__main__":
+    from src.retrieval.qdrant_store import get_client
+
+    client = get_client()
+    total = ingest_to_qdrant(client, recreate=True)
+    print(f"Ingestion complete — {total} points in Qdrant.")
