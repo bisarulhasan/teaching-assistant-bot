@@ -42,6 +42,12 @@ def ensure_collection(client: QdrantClient, recreate: bool = False) -> None:
             COLLECTION,
             vectors_config=VectorParams(size=EMBED_DIM, distance=Distance.COSINE),
         )
+    # Qdrant Cloud requires a payload index on any field used in a filter.
+    for field, schema in (("year", "integer"), ("subject", "keyword"), ("course", "keyword")):
+        try:
+            client.create_payload_index(COLLECTION, field_name=field, field_schema=schema)
+        except Exception:
+            pass  # already indexed
 
 
 def upsert(client: QdrantClient, points: list[tuple[int, list[float], dict]]) -> None:

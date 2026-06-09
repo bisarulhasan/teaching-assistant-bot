@@ -4,10 +4,14 @@ Mirrors the Weaviate ingestion: load -> chunk -> embed -> upsert, storing a chun
 once per year it belongs to (so 7-8 / 9-10 PDHPE books serve both years).
 """
 
+from dotenv import load_dotenv
+
 from src.ingestion.loader import load_all_pdfs
 from src.ingestion.chunker import chunk_documents
 from src.ingestion.embeddings import embed_documents
 from src.retrieval.qdrant_store import ensure_collection, upsert
+
+load_dotenv(override=True)  # so QDRANT_URL/KEY are read -> connects to the cloud, not :memory:
 
 
 def ingest_to_qdrant(client, data_dir: str = "data/raw", recreate: bool = True, only: str | None = None) -> int:
