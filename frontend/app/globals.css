@@ -2,16 +2,17 @@
 
 /* ---- Design tokens ------------------------------------------------------- */
 @theme {
-  --color-paper: #fbf6ec;
-  --color-paper-deep: #f3ebda;
-  --color-ink: #2b2a26;
-  --color-ink-soft: #6f6a5d;
-  --color-coral: #ff6b5e;
-  --color-coral-deep: #e8513f;
-  --color-teal: #1fa38c;
-  --color-teal-deep: #157a69;
-  --color-sun: #ffc24b;
-  --color-line: rgba(43, 42, 38, 0.07);
+  /* Western Grammar School palette — sky-blue / navy / red / sun, kept soft. */
+  --color-paper: #f2f6fc;        /* light cool blue-white */
+  --color-paper-deep: #e3ebf7;
+  --color-ink: #1f2747;          /* deep navy */
+  --color-ink-soft: #5a6589;
+  --color-coral: #e5392e;        /* WGS red — CTAs / user bubbles (used sparingly) */
+  --color-coral-deep: #c22b22;
+  --color-teal: #2f7fd1;         /* WGS sky-blue — primary accents / chips */
+  --color-teal-deep: #1e5aa8;
+  --color-sun: #fdb81e;          /* WGS sun — highlights */
+  --color-line: rgba(34, 43, 121, 0.08);   /* navy graph grid */
 
   --font-display: var(--font-fraunces), Georgia, serif;
   --font-body: var(--font-nunito), system-ui, sans-serif;
