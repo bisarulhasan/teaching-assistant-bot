@@ -1,7 +1,7 @@
 """Citation enforcement — decline to answer if context doesn't support the response."""
 
-from langchain_ollama import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage
+from src.generation.llm_client import get_chat_llm
 
 
 
@@ -35,8 +35,7 @@ def verify_answer_against_context(
         f"[Chunk {i+1}]: {chunk['content']}" 
         for i, chunk in enumerate(context_chunks)
     )
-    llm = ChatOllama(model="gemma4", temperature=0)
-    # llm = ChatOllama(model="qwen2.5:7b", temperature=0)
+    llm = get_chat_llm(temperature=0)
     
     response = llm.invoke([
         SystemMessage(content=VERIFICATION_PROMPT),

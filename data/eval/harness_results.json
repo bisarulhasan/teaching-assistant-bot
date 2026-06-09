@@ -1,0 +1,231 @@
+{
+  "retrieval_only": false,
+  "n": 13,
+  "summary": {
+    "page_hit": 1.0,
+    "citation_precision": 0.692,
+    "citation_recall": 0.535,
+    "section_hit": 1.0,
+    "keyword_coverage": 1.0,
+    "avg_sources_shown": 1.077
+  },
+  "rows": [
+    {
+      "id": "math_std_01",
+      "question": "What is the difference between gross pay and net pay?",
+      "expected_pages": [
+        38
+      ],
+      "shown_pages": [
+        38
+      ],
+      "num_sources": 1,
+      "page_hit": true,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "section_hit": true,
+      "keyword_coverage": 1.0
+    },
+    {
+      "id": "math_std_02",
+      "question": "How do I calculate net pay from a gross wage and deductions?",
+      "expected_pages": [
+        38
+      ],
+      "shown_pages": [
+        38
+      ],
+      "num_sources": 1,
+      "page_hit": true,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "section_hit": true,
+      "keyword_coverage": 1.0
+    },
+    {
+      "id": "math_adv_01",
+      "question": "What does expanding brackets mean in algebra?",
+      "expected_pages": [
+        12
+      ],
+      "shown_pages": [
+        12
+      ],
+      "num_sources": 1,
+      "page_hit": true,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "section_hit": true,
+      "keyword_coverage": 1.0
+    },
+    {
+      "id": "math_adv_02",
+      "question": "What are like and unlike terms?",
+      "expected_pages": [
+        12
+      ],
+      "shown_pages": [
+        12
+      ],
+      "num_sources": 1,
+      "page_hit": true,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "section_hit": true,
+      "keyword_coverage": 1.0
+    },
+    {
+      "id": "math_adv_03",
+      "question": "Expand and simplify 3x(4x - 7).",
+      "expected_pages": [
+        12
+      ],
+      "shown_pages": [
+        13
+      ],
+      "num_sources": 1,
+      "page_hit": true,
+      "citation_precision": 0.0,
+      "citation_recall": 0.0,
+      "section_hit": true,
+      "keyword_coverage": 1.0
+    },
+    {
+      "id": "math_adv_04",
+      "question": "How do I solve a quadratic inequality?",
+      "expected_pages": [
+        116
+      ],
+      "shown_pages": [
+        117
+      ],
+      "num_sources": 1,
+      "page_hit": true,
+      "citation_precision": 0.0,
+      "citation_recall": 0.0,
+      "section_hit": true,
+      "keyword_coverage": 1.0
+    },
+    {
+      "id": "comm_01",
+      "question": "How does product quality affect a consumer's buying decision?",
+      "expected_pages": [
+        6,
+        8
+      ],
+      "shown_pages": [
+        8
+      ],
+      "num_sources": 1,
+      "page_hit": true,
+      "citation_precision": 1.0,
+      "citation_recall": 0.5,
+      "section_hit": null,
+      "keyword_coverage": 1.0
+    },
+    {
+      "id": "comm_02",
+      "question": "What consumer guarantees does the Competition and Consumer Act provide?",
+      "expected_pages": [
+        20
+      ],
+      "shown_pages": [
+        29,
+        35
+      ],
+      "num_sources": 2,
+      "page_hit": true,
+      "citation_precision": 0.0,
+      "citation_recall": 0.0,
+      "section_hit": null,
+      "keyword_coverage": 1.0
+    },
+    {
+      "id": "sci_01",
+      "question": "How should quantitative data from an experiment be represented?",
+      "expected_pages": [
+        12
+      ],
+      "shown_pages": [
+        13
+      ],
+      "num_sources": 1,
+      "page_hit": true,
+      "citation_precision": 0.0,
+      "citation_recall": 0.0,
+      "section_hit": null,
+      "keyword_coverage": 1.0
+    },
+    {
+      "id": "sci_02",
+      "question": "What is the difference between an independent and a dependent variable?",
+      "expected_pages": [
+        2,
+        3,
+        4,
+        6
+      ],
+      "shown_pages": [
+        6
+      ],
+      "num_sources": 1,
+      "page_hit": true,
+      "citation_precision": 1.0,
+      "citation_recall": 0.25,
+      "section_hit": null,
+      "keyword_coverage": 1.0
+    },
+    {
+      "id": "sci_03",
+      "question": "Why is sample size important for the reliability of an investigation?",
+      "expected_pages": [
+        6
+      ],
+      "shown_pages": [
+        6
+      ],
+      "num_sources": 1,
+      "page_hit": true,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "section_hit": null,
+      "keyword_coverage": 1.0
+    },
+    {
+      "id": "pdhpe_s4_01",
+      "question": "In the migration unit, what would you take with you on a journey to freedom?",
+      "expected_pages": [
+        39,
+        40,
+        41,
+        42,
+        43
+      ],
+      "shown_pages": [
+        40
+      ],
+      "num_sources": 1,
+      "page_hit": true,
+      "citation_precision": 1.0,
+      "citation_recall": 0.2,
+      "section_hit": null,
+      "keyword_coverage": 1.0
+    },
+    {
+      "id": "pdhpe_s5_01",
+      "question": "What is BAC and what are the legal limits for drivers?",
+      "expected_pages": [
+        35
+      ],
+      "shown_pages": [
+        35
+      ],
+      "num_sources": 1,
+      "page_hit": true,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "section_hit": null,
+      "keyword_coverage": 1.0
+    }
+  ]
+}

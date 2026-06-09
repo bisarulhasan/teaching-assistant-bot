@@ -1,146 +1,98 @@
 {
-  "version": "1.0.0",
-  "description": "Golden evaluation dataset for Teaching Assistant Bot — OpenStax High School Physics",
-  "created_by": "Bisar",
-  "source_textbook": "OpenStax High School Physics (TEA Edition, 2020)",
+  "version": "2.1.0",
+  "description": "Golden eval set for Noor across all WGS books (Maths Standard/Advanced, Commerce, Investigating Science, PDHPE Stage 4 & 5). Pages/sections verified against the source PDFs. 'must_include' = short factual checkpoints in our own words; 'ground_truth_answer' = concise reference answer (our words, not copied prose) used by RAGAS context-precision. PDHPE is workbook/activity based, so its answers are expected to be weaker.",
+  "created_by": "Bisar Ul Hasan",
   "entries": [
     {
-      "id": "eval_001",
-      "question": "What is physics, according to the textbook?",
-      "ground_truth_answer": "Physics is the science aimed at describing the fundamental aspects of our universe — what things are in it, what properties of those things are noticeable, and what processes those things or their properties undergo. It is a branch of science rooted in objective evidence determined through observation and experimentation. A key requirement of any scientific explanation is that it must be testable.",
-      "ground_truth_contexts": [
-        "Physics is a branch of science. The word science comes from a Latin word that means having knowledge, and refers the knowledge of how the physical world operates, based on objective evidence determined through observation and experimentation. A key requirement of any scientific explanation of a natural phenomenon is that it must be testable; one must be able to devise and conduct an experimental investigation that either supports or refutes the explanation.",
-        "Physics is the science aimed at describing the fundamental aspects of our universe. This includes what things are in it, what properties of those things are noticeable, and what processes those things or their properties undergo. In simpler terms, physics attempts to describe the basic mechanisms that make our universe behave the way it does."
-      ],
-      "source_file": "textbook.pdf",
-      "source_pages": [6, 7],
-      "difficulty": "easy",
-      "category": "definition"
+      "id": "math_std_01", "question": "What is the difference between gross pay and net pay?",
+      "year": 11, "subject": "Mathematics", "course": "Standard",
+      "expected_pages": [38], "expected_section": "1G", "must_include": ["gross", "net", "deduction"],
+      "ground_truth_answer": "Gross pay is total earnings before deductions; net pay is what remains after deductions are subtracted.",
+      "category": "definition", "difficulty": "easy"
     },
     {
-      "id": "eval_002",
-      "question": "How does classical physics differ from modern physics, and what are the two main theories of modern physics?",
-      "ground_truth_answer": "Classical physics describes the universe under everyday circumstances and is still accurate for a wide range of situations. Modern physics, by contrast, deals with extremes: the very fast and the very small. Its two revolutionary theories are the theory of relativity (developed by Einstein in 1905, which addresses objects moving at very high speeds) and quantum mechanics (which addresses the behavior of subatomic particles). Physicists are working to unify these two theories into a single framework called relativistic quantum mechanics.",
-      "ground_truth_contexts": [
-        "Modern physics includes two revolutionary theories: relativity and quantum mechanics. These theories deal with the very fast and the very small, respectively. The theory of relativity was developed by Albert Einstein in 1905.",
-        "Physicists are currently trying to unify the two theories of modern physics, relativity and quantum mechanics, into a single, comprehensive theory called relativistic quantum mechanics.",
-        "knowledge of classical physics is necessary to understand modern physics. The second reason is that classical physics still gives an accurate description of the universe under a wide range of everyday circumstances."
-      ],
-      "source_file": "textbook.pdf",
-      "source_pages": [9, 10],
-      "difficulty": "medium",
-      "category": "comparison"
+      "id": "math_std_02", "question": "How do I calculate net pay from a gross wage and deductions?",
+      "year": 11, "subject": "Mathematics", "course": "Standard",
+      "expected_pages": [38], "expected_section": "1G", "must_include": ["net pay", "gross", "deduction"],
+      "ground_truth_answer": "Subtract all of the deductions from the gross pay to get the net pay.",
+      "category": "procedure", "difficulty": "easy"
     },
     {
-      "id": "eval_003",
-      "question": "What is the difference between a hypothesis and a scientific law?",
-      "ground_truth_answer": "A hypothesis is a tentative assumption based on what is already known — it is an educated guess proposed to explain an observation, not yet thoroughly tested. A scientific law, on the other hand, is a description of a natural phenomenon that has been tested universally and is found to be a rule that holds everywhere. Scientists avoid saying their studies 'prove' anything; they prefer 'support' to leave room for future discoveries.",
-      "ground_truth_contexts": [
-        "A hypothesis is a tentative assumption based on what is already known.",
-        "Scientists often plan and carry out investigations to answer questions about the universe around us. Such laws are intrinsic to the universe, meaning that humans did not create them and cannot change them. We can only discover and understand them.",
-        "many scientists are reluctant to say that their studies prove anything. By saying support instead of prove, it keeps the door open for future discoveries, even if they won't occur for centuries or even millennia."
-      ],
-      "source_file": "textbook.pdf",
-      "source_pages": [14, 17],
-      "difficulty": "medium",
-      "category": "comparison"
+      "id": "math_adv_01", "question": "What does expanding brackets mean in algebra?",
+      "year": 11, "subject": "Mathematics", "course": "Advanced",
+      "expected_pages": [12], "expected_section": "1A", "must_include": ["distribut", "bracket", "term"],
+      "ground_truth_answer": "Expanding brackets means multiplying the term outside the bracket by each term inside it, then collecting like terms.",
+      "category": "definition", "difficulty": "easy"
     },
     {
-      "id": "eval_004",
-      "question": "How is the SI unit for time — the second — currently defined?",
-      "ground_truth_answer": "The second is defined based on the vibration of cesium atoms. In 1967, it was redefined as the time required for 9,192,631,770 vibrations of a cesium atom. This replaced the older definition of 1/86,400 of an average solar day, because Earth's rotation is very gradually slowing down, making that definition imprecise.",
-      "ground_truth_contexts": [
-        "The SI unit for time, the second (s) also has a long history. For many years it was defined as 1/86,400 of an average solar day. However, the average solar day is actually very gradually getting longer due to gradual slowing of Earth's rotation.",
-        "One constant phenomenon is the very steady vibration of Cesium atoms, which can be observed and counted. This vibration forms the basis of the cesium atomic clock. In 1967, the second was redefined as the time required for 9,192,631,770 Cesium atom vibrations."
-      ],
-      "source_file": "textbook.pdf",
-      "source_pages": [20, 21],
-      "difficulty": "medium",
-      "category": "definition"
+      "id": "math_adv_02", "question": "What are like and unlike terms?",
+      "year": 11, "subject": "Mathematics", "course": "Advanced",
+      "expected_pages": [12], "expected_section": "1A", "must_include": ["like term", "combine"],
+      "ground_truth_answer": "Like terms have the same variables raised to the same powers and can be combined; unlike terms cannot.",
+      "category": "definition", "difficulty": "easy"
     },
     {
-      "id": "eval_005",
-      "question": "What is the difference between distance and displacement?",
-      "ground_truth_answer": "Distance is the total length of the path an object travels, and it is a scalar (magnitude only, no direction). Displacement is the net change in position — the straight-line distance from start to finish, including direction — and it is a vector. For example, if a car drives 5 km to school and returns 5 km home, the total distance is 10 km, but the displacement is zero because the starting and ending positions are the same.",
-      "ground_truth_contexts": [
-        "The net change in position of an object is its displacement.",
-        "The total distance that your car travels is 10 km, but the total displacement is 0.",
-        "We often want to be more precise when we talk about position. The description of an object's motion often includes more than just the distance it moves. For instance, if it is a five kilometer drive to school, the distance traveled is 5 kilometers. After dropping you off at school and driving back home, your parent will have traveled a total distance of 10 kilometers. The car and your parent will end up in the same starting position in space."
-      ],
-      "source_file": "textbook.pdf",
-      "source_pages": [57, 56],
-      "difficulty": "medium",
-      "category": "comparison"
+      "id": "math_adv_03", "question": "Expand and simplify 3x(4x - 7).",
+      "year": 11, "subject": "Mathematics", "course": "Advanced",
+      "expected_pages": [12], "expected_section": "1A", "must_include": ["12x", "21x"],
+      "ground_truth_answer": "3x(4x - 7) = 12x^2 - 21x.",
+      "category": "computation", "difficulty": "medium"
     },
     {
-      "id": "eval_006",
-      "question": "How is average speed different from average velocity, and why can a round-trip have zero average velocity but a nonzero average speed?",
-      "ground_truth_answer": "Average speed is total distance traveled divided by time, and it is a scalar (no direction). Average velocity is displacement divided by time, and it is a vector (includes direction). On a round trip, the total distance is nonzero, so average speed is nonzero. But because the starting and ending positions are the same, displacement is zero, making average velocity zero.",
-      "ground_truth_contexts": [
-        "Speed is the rate at which an object changes its location. Like distance, speed is a scalar because it has a magnitude but not a direction.",
-        "Average speed, v_avg, is the distance traveled divided by the time during which the motion occurs.",
-        "The vector version of speed is velocity. Velocity describes the speed and direction of an object.",
-        "Average velocity is displacement divided by the time over which the displacement occurs.",
-        "During a 30-minute round trip to the store, the total distance traveled is 6 km. The average speed is 12 km/h. The displacement for the round trip is zero, because there was no net change in position."
-      ],
-      "source_file": "textbook.pdf",
-      "source_pages": [62, 63],
-      "difficulty": "medium",
-      "category": "comparison"
+      "id": "math_adv_04", "question": "How do I solve a quadratic inequality?",
+      "year": 11, "subject": "Mathematics", "course": "Advanced",
+      "expected_pages": [116], "expected_section": "4B", "must_include": ["quadratic", "inequal"],
+      "ground_truth_answer": "Solve the related quadratic to find the boundary values, then test or sketch to choose the intervals where the inequality holds.",
+      "category": "procedure", "difficulty": "medium"
     },
     {
-      "id": "eval_007",
-      "question": "What is inertia, and how is it related to mass?",
-      "ground_truth_answer": "Inertia is the tendency of an object at rest to remain at rest, or for a moving object to remain in motion in a straight line at constant speed. It is a key property first described by Galileo and later incorporated into Newton's first law of motion. Inertia is proportional to mass — the greater the mass of an object, the greater its inertia. Mass is a measure of the amount of matter in an object and does not depend on gravity.",
-      "ground_truth_contexts": [
-        "Inertia is the tendency for an object at rest to remain at rest, or for a moving object to remain in motion in a straight line with constant speed. This key property of objects was first described by Galileo. Later, Newton incorporated the concept of inertia into his first law, which is often referred to as the law of inertia.",
-        "the inertia of an object is proportional to the mass of the object. Mass is a measure of the amount of matter (or stuff) in an object.",
-        "Unlike weight (which changes if the gravitational force changes), mass does not depend on gravity. The mass of an object is the same on Earth, in orbit, or on the surface of the moon."
-      ],
-      "source_file": "textbook.pdf",
-      "source_pages": [120, 121],
-      "difficulty": "easy",
-      "category": "definition"
+      "id": "comm_01", "question": "How does product quality affect a consumer's buying decision?",
+      "year": 9, "subject": "Commerce", "course": "",
+      "expected_pages": [6, 8], "must_include": ["quality", "product"],
+      "ground_truth_answer": "Consumers weigh quality against price; higher quality usually costs more but can last longer or carry added prestige.",
+      "category": "definition", "difficulty": "easy"
     },
     {
-      "id": "eval_008",
-      "question": "State Newton's second law of motion and explain the relationship between force, mass, and acceleration.",
-      "ground_truth_answer": "Newton's second law states that the net external force on an object equals its mass times its acceleration: F_net = ma. This means force and acceleration are directly proportional — double the force, double the acceleration (assuming mass is constant). Force and mass are inversely proportional — for the same net force, a larger mass produces a smaller acceleration. The law applies to changing velocity (speeding up, slowing down, or changing direction).",
-      "ground_truth_contexts": [
-        "Newton's second law of motion is used to calculate what happens in situations involving forces and motion, and it shows the mathematical relationship between force, mass, and acceleration. Mathematically, the second law is most often written as F_net = ma, where F (or ΣF) is the net external force, m is the mass of the system, and a is the acceleration.",
-        "Newton's first law considered bodies at rest or bodies in motion at a constant velocity. The other state of motion to consider is when an object is moving with a changing velocity, which means a change in the speed and/or the direction of motion. This type of motion is addressed by Newton's second law of motion, which states how force causes changes in motion."
-      ],
-      "source_file": "textbook.pdf",
-      "source_pages": [122, 123],
-      "difficulty": "medium",
-      "category": "explanation"
+      "id": "comm_02", "question": "What consumer guarantees does the Competition and Consumer Act provide?",
+      "year": 9, "subject": "Commerce", "course": "",
+      "expected_pages": [20], "must_include": ["acceptable quality", "purpose"],
+      "ground_truth_answer": "Goods and services must be of acceptable quality, fit for their purpose, match their description, and match any sample or demonstration model.",
+      "category": "definition", "difficulty": "medium"
     },
     {
-      "id": "eval_009",
-      "question": "A student measures a piece of paper four times and gets values of 10.9, 11.0, 11.1, and 11.2 inches. A ruler's true value is 11.0 inches. Are these measurements precise, accurate, or both?",
-      "ground_truth_answer": "These measurements are reasonably precise because they are close to each other (range of only 0.3 inches). However, they are also reasonably accurate because they cluster around the true value of 11.0 inches. Precision refers to how close repeated measurements are to each other, while accuracy refers to how close a measurement is to the true value. A measurement can be precise but inaccurate (consistently off), accurate but imprecise (scattered around the true value), or both.",
-      "ground_truth_contexts": [
-        "Precision states how well repeated measurements of something generate the same or similar results. Therefore, the precision of measurements refers to how close together the measurements are when you measure the same thing several times. One way to analyze the precision of measurements would be to determine the range, or difference between the lowest and the highest measured values. In the case of the printer paper measurements, the lowest value was 10.9 inches and the highest value was 11.2 inches. Thus, the measured values deviated from each other by, at most, 0.3 inches. These measurements were reasonably precise because they varied by only 0.3 inches.",
-        "In this figure, the dots are concentrated close to one another, indicating high precision, but they are rather far away from the actual location of the restaurant, indicating low accuracy."
-      ],
-      "source_file": "textbook.pdf",
-      "source_pages": [27, 28],
-      "difficulty": "hard",
-      "category": "trick"
+      "id": "sci_01", "question": "How should quantitative data from an experiment be represented?",
+      "year": 12, "subject": "Investigating Science", "course": "",
+      "expected_pages": [12], "chapter": 1, "must_include": ["table", "data"],
+      "ground_truth_answer": "Numerical data is best organised in a table with clear headings and units for the independent and dependent variables.",
+      "category": "procedure", "difficulty": "easy"
     },
     {
-      "id": "eval_010",
-      "question": "Is it possible to have zero displacement but a nonzero distance? What about zero distance but nonzero displacement?",
-      "ground_truth_answer": "Yes, it is possible to have zero displacement with a nonzero distance. If an object travels along a path and returns to its starting position, its displacement is zero (no net change in position) but it has covered a real distance. However, zero distance with nonzero displacement is impossible: if an object has not moved at all (distance = 0), it cannot have ended up at a different position, so displacement must also be zero.",
-      "ground_truth_contexts": [
-        "One-dimensional motion can have zero distance with a nonzero displacement. Displacement has both magnitude and direction, and it can also have zero displacement with nonzero distance because distance has only magnitude.",
-        "The net change in position of an object is its displacement.",
-        "The total distance that your car travels is 10 km, but the total displacement is 0."
-      ],
-      "source_file": "textbook.pdf",
-      "source_pages": [57, 82],
-      "difficulty": "hard",
-      "category": "trick"
+      "id": "sci_02", "question": "What is the difference between an independent and a dependent variable?",
+      "year": 12, "subject": "Investigating Science", "course": "",
+      "expected_pages": [2, 3, 4, 6], "chapter": 1, "must_include": ["independent", "dependent"],
+      "ground_truth_answer": "The independent variable is the one you change; the dependent variable is the one you measure in response.",
+      "category": "definition", "difficulty": "easy"
+    },
+    {
+      "id": "sci_03", "question": "Why is sample size important for the reliability of an investigation?",
+      "year": 12, "subject": "Investigating Science", "course": "",
+      "expected_pages": [6], "chapter": 5, "must_include": ["sample size", "reliab"],
+      "ground_truth_answer": "A larger sample size reduces the influence of random chance, giving more reliable results.",
+      "category": "concept", "difficulty": "medium"
+    },
+    {
+      "id": "pdhpe_s4_01", "question": "In the migration unit, what would you take with you on a journey to freedom?",
+      "year": 7, "subject": "PDHPE", "course": "",
+      "expected_pages": [39, 40, 41, 42, 43], "must_include": ["freedom"],
+      "ground_truth_answer": "An activity asking students to list what they value and would carry when migrating or fleeing to a new country.",
+      "category": "activity", "difficulty": "easy"
+    },
+    {
+      "id": "pdhpe_s5_01", "question": "What is BAC and what are the legal limits for drivers?",
+      "year": 9, "subject": "PDHPE", "course": "",
+      "expected_pages": [35], "must_include": ["blood alcohol", "0.05"],
+      "ground_truth_answer": "Blood alcohol concentration (BAC) is the amount of alcohol in the bloodstream. The limit is zero for L- and P-plate drivers and 0.05% for fully licensed drivers.",
+      "category": "definition", "difficulty": "easy"
     }
   ]
 }

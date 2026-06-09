@@ -1,0 +1,17 @@
+# Slim runtime deps for the hosted backend (Qdrant + FastEmbed + OpenRouter +
+# Cohere). Deliberately excludes PyTorch / sentence-transformers / Ollama /
+# Anthropic / RAGAS / pypdf — none are imported on the serving path.
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+pyyaml>=6.0
+weaviate-client>=4.9.0
+qdrant-client>=1.12.0
+fastembed>=0.4.0
+rank-bm25>=0.2.2
+cohere>=5.0.0
+tiktoken>=0.7.0
+langchain-core>=0.3.0
+langchain-openai>=0.2.0
+langchain-text-splitters>=0.3.0

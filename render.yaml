@@ -1,0 +1,29 @@
+# Render Blueprint for the Noor RAG backend (FastAPI + Qdrant + OpenRouter).
+# Secrets (sync:false) are set in the Render dashboard, not committed.
+services:
+  - type: web
+    name: wgs-noor-api
+    runtime: python
+    plan: free
+    region: oregon  # match the Qdrant cluster region (fast backend <-> DB)
+    branch: feat/maths-ingestion-rework
+    buildCommand: pip install -r requirements-deploy.txt
+    startCommand: uvicorn src.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: VECTOR_DB
+        value: qdrant
+      - key: LLM_MODEL
+        value: qwen/qwen-2.5-72b-instruct
+      - key: FRONTEND_ORIGIN
+        value: https://wgs-noor.vercel.app
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: COHERE_API_KEY
+        sync: false

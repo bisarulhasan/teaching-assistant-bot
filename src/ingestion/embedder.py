@@ -3,7 +3,6 @@
 import os
 import weaviate
 from weaviate.classes.config import Configure, Property, DataType
-from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,6 +15,15 @@ def get_weaviate_client() -> weaviate.WeaviateClient:
     client = weaviate.connect_to_local()
     print(f"Weaviate connected: {client.is_ready()}")
     return client
+
+
+def get_vector_client():
+    """Return the active vector-store client (Weaviate or Qdrant) per VECTOR_DB."""
+    from src.config.settings import VECTOR_DB
+    if VECTOR_DB == "qdrant":
+        from src.retrieval.qdrant_store import get_client
+        return get_client()
+    return get_weaviate_client()
 
 
 def create_collection(client: weaviate.WeaviateClient, delete_existing: bool = False):
@@ -33,6 +41,14 @@ def create_collection(client: weaviate.WeaviateClient, delete_existing: bool = F
                 Property(name="page", data_type=DataType.INT),
                 Property(name="chunk_id", data_type=DataType.TEXT),
                 Property(name="token_count", data_type=DataType.INT),
+                # Student-facing filters
+                Property(name="year", data_type=DataType.INT),
+                Property(name="subject", data_type=DataType.TEXT),
+                Property(name="course", data_type=DataType.TEXT),
+                # Citation context
+                Property(name="chapter", data_type=DataType.INT),
+                Property(name="chapter_title", data_type=DataType.TEXT),
+                Property(name="section", data_type=DataType.TEXT),
             ],
         )
         print(f"Created collection: {COLLECTION_NAME}")
@@ -46,6 +62,7 @@ def embed_and_store(chunks: list, client: weaviate.WeaviateClient):
     
     Uses batch imports for efficiency.
     """
+    from langchain_huggingface import HuggingFaceEmbeddings  # lazy: PyTorch only when ingesting to Weaviate
     embeddings_model = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2",
     model_kwargs={"device": "mps"},  # Uses your M1 GPU
@@ -57,20 +74,32 @@ def embed_and_store(chunks: list, client: weaviate.WeaviateClient):
     print(f"Generating embeddings for {len(texts)} chunks...")
     vectors = embeddings_model.embed_documents(texts)
     
-    # Batch insert into Weaviate
+    # Batch insert into Weaviate. A chunk is embedded once but stored once PER
+    # year it belongs to (e.g. a 7–8 PDHPE book → one object for year 7 and one
+    # for year 8, sharing the same vector). This keeps `year` a simple INT so the
+    # retrieval filter / catalog / frontend need no changes.
     print("Storing in Weaviate...")
     with collection.batch.dynamic() as batch:
         for chunk, vector in zip(chunks, vectors):
-            batch.add_object(
-                properties={
-                    "content": chunk.page_content,
-                    "source_file": chunk.metadata.get("source_file", "unknown"),
-                    "page": chunk.metadata.get("page", 0),
-                    "chunk_id": chunk.metadata.get("chunk_id", ""),
-                    "token_count": chunk.metadata.get("token_count", 0),
-                },
-                vector=vector,
-            )
+            m = chunk.metadata
+            years = m.get("years") or [m.get("year", 0)]
+            for year in years:
+                batch.add_object(
+                    properties={
+                        "content": chunk.page_content,
+                        "source_file": m.get("source_file", "unknown"),
+                        "page": m.get("page", 0),
+                        "chunk_id": m.get("chunk_id", ""),
+                        "token_count": m.get("token_count", 0),
+                        "year": year,
+                        "subject": m.get("subject", ""),
+                        "course": m.get("course", ""),
+                        "chapter": m.get("chapter", 0),
+                        "chapter_title": m.get("chapter_title", ""),
+                        "section": m.get("section", ""),
+                    },
+                    vector=vector,
+                )
     
     # Verify
     count = collection.aggregate.over_all(total_count=True).total_count
