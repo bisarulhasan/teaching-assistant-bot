@@ -5,6 +5,7 @@ import Markdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { ask, type ClassOption, type Source } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import Mascot from "./Mascot";
 
 type Msg = {
@@ -125,16 +126,26 @@ export default function Chat({
             <p className="text-xs text-ink-soft">Ask your textbook</p>
           </div>
         </div>
-        <button
-          onClick={onSwitchClass}
-          className="group flex items-center gap-2 rounded-full border-2 border-ink/10 bg-white/70 px-4 py-2 text-sm font-bold text-ink transition-colors hover:border-teal hover:text-teal-deep"
-        >
-          <span className="text-ink-soft group-hover:text-teal-deep">
-            Year {cls.year}
-          </span>
-          {cls.subject} · {cls.course}
-          <span className="text-xs opacity-50">change</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onSwitchClass}
+            className="group flex items-center gap-2 rounded-full border-2 border-ink/10 bg-white/70 px-4 py-2 text-sm font-bold text-ink transition-colors hover:border-teal hover:text-teal-deep"
+          >
+            <span className="text-ink-soft group-hover:text-teal-deep">Year {cls.year}</span>
+            {cls.subject}{cls.course ? ` · ${cls.course}` : ""}
+            <span className="text-xs opacity-50">change</span>
+          </button>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            title="Sign out"
+            aria-label="Sign out"
+            className="grid h-9 w-9 place-items-center rounded-full border-2 border-ink/10 bg-white/70 text-ink-soft transition-colors hover:border-coral hover:text-coral-deep"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       {/* Messages */}
