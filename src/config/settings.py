@@ -1,5 +1,6 @@
 """Central configuration loaded from prompts.yaml and environment."""
 
+import os
 from pathlib import Path
 import yaml
 from dotenv import load_dotenv
@@ -18,9 +19,10 @@ RERANK_TOP_K = 5              # After reranking, keep top 5
 CHUNK_SIZE = 650              # Target tokens per chunk
 CHUNK_OVERLAP = 100           # Token overlap between chunks
 EMBEDDING_MODEL = "text-embedding-3-small"
-LLM_MODEL = "qwen2.5:7b"    # Local Ollama model for RAG generation (4.7GB; fits 16GB RAM)
-# LLM_MODEL = "gemma4"      # 9.6GB — too large for 16GB RAM alongside Weaviate (crashes)
-# LLM_MODEL = "claude-sonnet-4-6"  # Claude API via langchain-anthropic (requires ANTHROPIC_API_KEY)
+# Generation model. Default: a strong open model hosted on OpenRouter (24/7, no
+# local RAM/GPU). Override with LLM_MODEL env: "qwen2.5:7b" for local Ollama, or
+# another OpenRouter id like "meta-llama/llama-3.3-70b-instruct".
+LLM_MODEL = os.getenv("LLM_MODEL", "qwen/qwen-2.5-72b-instruct")
 
 # Evaluation thresholds (Phase 3)
 FAITHFULNESS_THRESHOLD = 0.8
