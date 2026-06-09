@@ -2,7 +2,12 @@
 
 from src.ingestion.loader import load_all_pdfs
 from src.ingestion.chunker import chunk_documents
-from src.ingestion.embedder import get_weaviate_client, create_collection, embed_and_store
+from src.ingestion.embedder import (
+    get_weaviate_client,
+    get_vector_client,
+    create_collection,
+    embed_and_store,
+)
 from src.retrieval.vector_retriever import vector_search
 from src.retrieval.bm25_retriever import BM25Retriever
 from src.retrieval.hybrid_retriever import hybrid_search
@@ -32,38 +37,59 @@ def ingest(data_dir: str = "data/raw", fresh: bool = False):
     return chunks
 
 
-def query(question: str, use_hybrid: bool = True, verify: bool = True) -> dict:
+def query(
+    question: str,
+    use_hybrid: bool = True,
+    verify: bool = True,
+    filters: dict | None = None,
+    client=None,
+    bm25=None,
+) -> dict:
     """
     Run a query through the full RAG pipeline.
-    
+
     Pipeline: Hybrid Retrieval → Reranking → Generation → Citation Verification
+
+    Args:
+        filters: Optional {year, subject, course} to scope retrieval to a
+            student's textbooks.
+        client, bm25: Optionally inject a pre-initialized Weaviate client and
+            BM25 index (the API does this once at startup). When omitted, they
+            are created for this call and the client is closed afterwards.
     """
-    client = get_weaviate_client()
+    own_client = client is None
+    if own_client:
+        client = get_vector_client()
     try:
         # Step 1: Retrieve candidates
         if use_hybrid:
-            bm25 = BM25Retriever(client)
-            candidates = hybrid_search(question, client, bm25, top_k=RETRIEVAL_TOP_K)
+            if bm25 is None:
+                bm25 = BM25Retriever(client)
+            candidates = hybrid_search(
+                question, client, bm25, top_k=RETRIEVAL_TOP_K, filters=filters
+            )
         else:
-            candidates = vector_search(question, client, top_k=RETRIEVAL_TOP_K)
-        
+            candidates = vector_search(
+                question, client, top_k=RETRIEVAL_TOP_K, filters=filters
+            )
+
         print(f"\nRetrieved {len(candidates)} candidates")
-        
+
         # Step 2: Rerank with cross-encoder
         reranked = rerank_chunks(question, candidates, top_k=RERANK_TOP_K)
-        
+
         # Step 3: Generate answer
         result = generate_answer(
             question, reranked, prompt_key="rag_answer_with_reranking"
         )
-        
+
         # Step 4: Citation enforcement
         if verify and result["answer"]:
             verification = verify_answer_against_context(
                 question, result["answer"], reranked
             )
             result["verification"] = verification
-            
+
             if not verification["is_supported"]:
                 result["answer"] = (
                     "I don't have enough information in the course materials to "
@@ -72,10 +98,11 @@ def query(question: str, use_hybrid: bool = True, verify: bool = True) -> dict:
                     "Please ask your teacher for clarification."
                 )
                 result["citation_enforced"] = True
-        
+
         return result
     finally:
-        client.close()
+        if own_client:
+            client.close()
 
 
 if __name__ == "__main__":

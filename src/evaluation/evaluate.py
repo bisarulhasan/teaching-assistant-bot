@@ -14,6 +14,8 @@ from ragas.embeddings import LangchainEmbeddingsWrapper
 from langchain_ollama import ChatOllama
 from langchain_huggingface import HuggingFaceEmbeddings
 from src.pipeline import query as rag_query
+from src.ingestion.embedder import get_weaviate_client
+from src.retrieval.bm25_retriever import BM25Retriever
 from src.config.settings import (
     FAITHFULNESS_THRESHOLD,
     ANSWER_RELEVANCY_THRESHOLD,
@@ -54,12 +56,27 @@ def run_evaluation(
     ground_truths = []
     
     print(f"\nRunning {len(entries)} queries through RAG pipeline...")
-    
+
+    # Build the Weaviate client + BM25 index once and reuse across all entries
+    # (the per-call default would rebuild the 2704-doc index every question).
+    shared_client = get_weaviate_client()
+    shared_bm25 = BM25Retriever(shared_client)
+
     for i, entry in enumerate(entries):
         print(f"  [{i+1}/{len(entries)}] {entry['question'][:60]}...")
-        
+
         try:
-            result = rag_query(entry["question"], verify=False)
+            result = rag_query(
+                entry["question"],
+                verify=False,
+                filters={
+                    "year": entry.get("year"),
+                    "subject": entry.get("subject"),
+                    "course": entry.get("course"),
+                },
+                client=shared_client,
+                bm25=shared_bm25,
+            )
             
             questions.append(entry["question"])
             answers.append(result["answer"])
@@ -72,6 +89,8 @@ def run_evaluation(
             contexts.append([])
             ground_truths.append(entry["ground_truth_answer"])
     
+    shared_client.close()
+
     # Build RAGAS dataset
     eval_dataset = Dataset.from_dict({
         "question": questions,
@@ -83,8 +102,42 @@ def run_evaluation(
     # Set up local LLM and embeddings for RAGAS evaluation
     print("\nRunning RAGAS evaluation with local models...")
     
-    eval_llm = LangchainLLMWrapper(ChatOllama(model="qwen2.5:7b", temperature=0))
-    # eval_llm = LangchainLLMWrapper(ChatOllama(model="gemma4", temperature=0))
+    # RAGAS judge. The local 7B (qwen) can't reliably satisfy RAGAS 0.4.x's
+    # structured-output parser, so default to a strong cloud judge to SCORE the
+    # (still fully-local) bot's answers. Override with RAGAS_JUDGE=ollama for a
+    # fully-offline (but flakier) run.
+    import os as _os
+    from dotenv import load_dotenv as _load_dotenv
+    _load_dotenv(override=True)  # override empty shell vars that shadow .env
+    judge = _os.getenv("RAGAS_JUDGE", "openai").lower()
+    if judge == "openrouter":
+        # OpenRouter is OpenAI-compatible. Judge a (still local) bot with a strong
+        # model so RAGAS's structured-output parser succeeds. Pick the model with
+        # RAGAS_JUDGE_MODEL (default a cheap, reliable one).
+        from langchain_openai import ChatOpenAI
+        eval_llm = LangchainLLMWrapper(ChatOpenAI(
+            model=_os.getenv("RAGAS_JUDGE_MODEL", "openai/gpt-4o-mini"),
+            temperature=0,
+            api_key=_os.getenv("OPENROUTER_API_KEY"),
+            base_url="https://openrouter.ai/api/v1",
+        ))
+    elif judge == "openai":
+        from langchain_openai import ChatOpenAI
+        eval_llm = LangchainLLMWrapper(
+            ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=_os.getenv("OPENAI_API_KEY"))
+        )
+    elif judge == "anthropic":
+        from langchain_anthropic import ChatAnthropic
+        eval_llm = LangchainLLMWrapper(
+            ChatAnthropic(
+                model="claude-3-5-haiku-latest",
+                temperature=0,
+                api_key=_os.getenv("ANTHROPIC_API_KEY"),
+            )
+        )
+    else:
+        eval_llm = LangchainLLMWrapper(ChatOllama(model="qwen2.5:7b", temperature=0))
+    print(f"RAGAS judge: {judge}")
     eval_embeddings = LangchainEmbeddingsWrapper(HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2",
         model_kwargs={"device": "mps"},
@@ -95,10 +148,14 @@ def run_evaluation(
     answer_relevancy_metric = AnswerRelevancy(llm=eval_llm, embeddings=eval_embeddings)
     context_precision_metric = ContextPrecision(llm=eval_llm)
     
+    # There's only ONE local Ollama, so RAGAS's default 16-way concurrency just
+    # queues calls behind each other until they hit the timeout (-> NaN). Cap
+    # workers low so each judge call runs and completes within its timeout.
     run_config = RunConfig(
-        timeout=900,        # 5 minutes per LLM call (local models are slow)
-        max_retries=2,
-        max_wait=360,
+        timeout=1200,       # 20 min per LLM call (local 7B judge is slow)
+        max_retries=3,
+        max_wait=120,
+        max_workers=2,      # serialise-ish against the single Ollama
     )
 
     results = evaluate(

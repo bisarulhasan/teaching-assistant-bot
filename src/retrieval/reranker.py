@@ -1,10 +1,41 @@
 """Cross-encoder reranking using Cohere Rerank API."""
 
 import os
+import time
 import cohere
 from dotenv import load_dotenv
 
+try:
+    from cohere.errors import TooManyRequestsError
+except Exception:  # pragma: no cover - import shape varies by version
+    TooManyRequestsError = None
+
 load_dotenv()
+
+
+def _rerank_with_backoff(co, *, query, documents, model, top_n, max_retries: int = 5):
+    """Call Cohere rerank, retrying with backoff on 429s.
+
+    The free Cohere trial key allows only ~10 calls/minute, so a burst (eval
+    runs, or many students at once) will rate-limit. Backing off lets the work
+    finish instead of crashing — and keeps the live bot resilient.
+    """
+    for attempt in range(max_retries + 1):
+        try:
+            return co.rerank(query=query, documents=documents, model=model, top_n=top_n)
+        except Exception as e:  # noqa: BLE001 - we re-raise non-rate-limit errors
+            msg = str(e).lower()
+            rate_limited = (
+                (TooManyRequestsError is not None and isinstance(e, TooManyRequestsError))
+                or "429" in msg
+                or "too many requests" in msg
+                or "trial key" in msg
+            )
+            if not rate_limited or attempt == max_retries:
+                raise
+            wait = 7 * (attempt + 1)  # 7s, 14s, ... clears the 10/min window
+            print(f"Cohere rate limit — backing off {wait}s (retry {attempt + 1}/{max_retries})")
+            time.sleep(wait)
 
 
 def rerank_chunks(
@@ -36,11 +67,8 @@ def rerank_chunks(
     # Extract texts for reranking
     documents = [chunk["content"] for chunk in chunks]
     
-    response = co.rerank(
-        query=query,
-        documents=documents,
-        model=model,
-        top_n=top_k,
+    response = _rerank_with_backoff(
+        co, query=query, documents=documents, model=model, top_n=top_k
     )
     
     # Map reranked results back to original chunk data
