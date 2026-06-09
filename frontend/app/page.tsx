@@ -1,27 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 import { fetchCatalog, type ClassOption } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import ClassPicker from "@/components/ClassPicker";
 import Chat from "@/components/Chat";
+import Auth from "@/components/Auth";
 import Mascot from "@/components/Mascot";
 
 const STORE_KEY = "noor.class";
 
 export default function Home() {
+  // --- auth ---
+  const [session, setSession] = useState<Session | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  // --- app ---
   const [catalog, setCatalog] = useState<ClassOption[] | null>(null);
   const [error, setError] = useState(false);
   const [cls, setCls] = useState<ClassOption | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAuthReady(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!session) return;
     try {
       const saved = localStorage.getItem(STORE_KEY);
       if (saved) setCls(JSON.parse(saved));
     } catch {}
     setReady(true);
     fetchCatalog().then(setCatalog).catch(() => setError(true));
-  }, []);
+  }, [session]);
 
   function pick(c: ClassOption) {
     setCls(c);
@@ -37,8 +55,10 @@ export default function Home() {
     } catch {}
   }
 
-  if (!ready) return null;
+  if (!authReady) return null;
+  if (!session) return <Auth />;
 
+  if (!ready) return null;
   if (cls) return <Chat cls={cls} onSwitchClass={switchClass} />;
 
   if (error)
