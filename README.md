@@ -1,164 +1,113 @@
-# Teaching Assistant Bot 🎓
+# Noor — Teaching Assistant Bot 🎓
 
-A production-grade RAG (Retrieval-Augmented Generation) system that answers student questions from course materials with verifiable citations and automated quality assurance.
+A production-grade, **deployed 24/7** RAG (Retrieval-Augmented Generation) assistant that answers students' questions **only from their own school textbooks**, with exact chapter/section/page citations and automated quality gates.
+
+**▶ Live demo:** https://wgs-noor.vercel.app — students pick their year/subject/course and ask away.
+
+Built for Western Grammar School across **6 textbooks, 4 subjects, Years 7–12** (Mathematics Standard & Advanced, Commerce, Investigating Science, PDHPE Stage 4 & 5).
 
 ## Architecture
 
 ```
-PDF Documents → Chunking (500-800 tokens) → HuggingFace Embeddings → Weaviate Vector Store
-                                                                            ↓
-Student Question → Hybrid Retrieval (BM25 + Vector) → Cohere Reranking → LLM Generation
-                                                                              ↓
-                                                          Citation Verification → Answer
+                         Vercel (Next.js "Noor" UI)
+                                   │  https
+                                   ▼
+                          Render (FastAPI backend)
+        ┌──────────────────────────┼───────────────────────────┐
+        ▼                          ▼                            ▼
+  Qdrant Cloud              Cohere Rerank v3.5            OpenRouter
+ (dense + payload          (cross-encoder)            (qwen-2.5-72b
+  filtering) + in-                                     generation)
+  memory BM25
 ```
+
+Per request: **hybrid retrieval** (BM25 + dense, fused with Reciprocal Rank Fusion) → **Cohere cross-encoder reranking** → **OpenRouter generation** → **citation verification** (declines if ungrounded).
+
+Ingestion: `pdftotext` extraction → publisher-aware cleaning → token-aware chunking → **FastEmbed (ONNX MiniLM)** embeddings → Qdrant, tagged with year/subject/course + chapter/section for filtered retrieval and citations.
 
 ## Key Features
 
-- **Hybrid Retrieval**: BM25 keyword search + vector semantic search with Reciprocal Rank Fusion
-- **Cross-Encoder Reranking**: Cohere Rerank v3.5 for precision relevance scoring
-- **Citation Enforcement**: Answers are verified against source material; unsupported claims are declined
-- **CI-Gated Evaluation**: Unit tests run on every PR via GitHub Actions
-- **Version-Controlled Prompts**: All system prompts stored in `prompts.yaml` with Git history
-- **Fully Local Pipeline**: Runs entirely on open-source models — no paid API dependencies for generation
+- **Hybrid retrieval** — BM25 + dense vector search fused with **Reciprocal Rank Fusion**, then **Cohere v3.5 cross-encoder** reranking.
+- **Per-student scoping** — every chunk carries year/subject/course metadata; retrieval is filtered so a Year 11 Standard student never sees Year 12 Science content (isolation verified).
+- **Citation enforcement** — a second-pass grounding check declines to answer when the textbook doesn't support it, instead of hallucinating.
+- **Heterogeneous ingestion** — 6 books from 3 publishers (different layouts, multi-year books, no-course subjects, per-chapter folders), with publisher-aware boilerplate cleaning.
+- **Dual evaluation** — a **RAGAS** pipeline (configurable judge) **and** a fast deterministic harness (page-hit, citation precision, fact coverage).
+- **CI/CD** — feature → develop → main gitflow with GitHub Actions running the test suite on every PR.
+- **Hosted 24/7** — Vercel + Render + Qdrant Cloud + OpenRouter; no always-on laptop required.
 
 ## Tech Stack
 
-| Component | Technology | Details |
-|-----------|-----------|---------|
-| Orchestration | LangChain | Pipeline orchestration and document processing |
-| Vector Store | Weaviate | Local Docker instance for vector storage |
-| Embeddings | HuggingFace all-MiniLM-L6-v2 | 22M params, ~80 MB, runs on CPU/MPS |
-| Reranking | Cohere Rerank v3.5 | Cross-encoder API (free tier: 1000 calls/month) |
-| Generation | Google Gemma 4 via Ollama | 8B params, ~5.5 GB, runs locally on Apple Silicon |
-| Evaluation LLM | Qwen 2.5:7b via Ollama | 7B params, ~4.7 GB, fast structured output |
-| Evaluation Framework | RAGAS | Faithfulness, relevancy, and precision metrics |
-| CI/CD | GitHub Actions | Unit tests on every PR |
+| Component | Technology |
+|-----------|-----------|
+| Frontend | Next.js (App Router) + Tailwind v4 + KaTeX, on **Vercel** |
+| Backend | FastAPI + Uvicorn, on **Render** |
+| Vector store | **Qdrant Cloud** (dense + payload-indexed filtering) |
+| Keyword search | `rank-bm25` (in-memory, built from Qdrant at startup) |
+| Embeddings | **FastEmbed** ONNX `all-MiniLM-L6-v2` (384-dim, no PyTorch) |
+| Reranking | **Cohere Rerank v3.5** (cross-encoder) |
+| Generation | **OpenRouter** (`qwen/qwen-2.5-72b-instruct` by default; configurable) |
+| Orchestration | LangChain |
+| Evaluation | RAGAS + a custom deterministic harness |
+| CI/CD | GitHub Actions |
+
+> The vector store is abstracted behind a `VECTOR_DB` switch (`qdrant` | `weaviate`) and generation behind a model factory (OpenRouter / Ollama / Anthropic), so the same code runs hosted **or** fully local.
 
 ## Evaluation Results
 
-| Metric | Score | Threshold | Status |
-|--------|-------|-----------|--------|
-| Faithfulness | 0.8482 | 0.80 | ✅ |
-| Answer Relevancy | 0.7551 | 0.75 | ✅ |
-| Context Precision | 0.8326 | 0.50 | ✅ |
+On a 13-question golden set spanning all 6 books (judge = `gpt-4o-mini` via OpenRouter, scoring the deployed model):
 
-## Quick Start
+| Metric | Score | Threshold |
+|--------|-------|-----------|
+| RAGAS Faithfulness | **0.94** | 0.80 ✅ |
+| RAGAS Context Precision | **0.98** | 0.50 ✅ |
+| RAGAS Answer Relevancy | **0.85** | 0.75 ✅ |
+| Retrieval page-hit (harness) | **1.00** | — |
+| Answer fact-coverage (harness) | **1.00** | — |
 
-### Prerequisites
+## Deployment (24/7)
 
-- Python 3.12+
-- Docker Desktop (for Weaviate)
-- Ollama (for local LLMs) — https://ollama.com
-- A Cohere API key (free tier: https://dashboard.cohere.com/api-keys)
-- **Minimum 8 GB RAM** (16 GB recommended for best model performance)
+Frontend on Vercel, backend on Render, data in Qdrant Cloud, generation via OpenRouter — see **[`DEPLOY.md`](DEPLOY.md)**. Backend env vars: `VECTOR_DB=qdrant`, `LLM_MODEL`, `QDRANT_URL`, `QDRANT_API_KEY`, `OPENROUTER_API_KEY`, `COHERE_API_KEY`, `FRONTEND_ORIGIN`. Render config lives in [`render.yaml`](render.yaml); slim runtime deps in [`requirements-deploy.txt`](requirements-deploy.txt).
 
-### Step 1: Clone and Install
+## Local Development
 
 ```bash
 git clone https://github.com/bisarulhasan/teaching-assistant-bot.git
 cd teaching-assistant-bot
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-```
+cp .env.example .env          # add COHERE_API_KEY, OPENROUTER_API_KEY, (QDRANT_URL/KEY for cloud)
 
-### Step 2: Pull Local Models
+# Ingest the books into Qdrant (cloud, or in-memory if QDRANT_URL unset)
+VECTOR_DB=qdrant python -m src.ingestion.qdrant_ingest
 
-This project runs entirely on local open-source models via Ollama. Choose models based on your available RAM:
+# Run the API
+VECTOR_DB=qdrant uvicorn src.api.main:app --reload
 
-| Model | Role | Parameters | Download Size | RAM Needed | Minimum Hardware |
-|-------|------|-----------|---------------|------------|-----------------|
-| `gemma4` | RAG generation | 8B | ~5.5 GB | ~9.6 GB | 16 GB RAM |
-| `gemma4:e4b` | RAG generation (lightweight) | 4B effective | ~3 GB | ~5 GB | 8 GB RAM |
-| `qwen2.5:7b` | RAGAS evaluation | 7B | ~4.7 GB | ~8 GB | 16 GB RAM |
-| `qwen2.5:3b` | RAGAS evaluation (lightweight) | 3B | ~2 GB | ~4 GB | 8 GB RAM |
-
-**Recommended setup for 16GB RAM (e.g., MacBook Pro M1/M2/M3):**
-
-```bash
-ollama pull gemma4          # Best quality for answer generation
-ollama pull qwen2.5:7b      # Fast structured output for evaluation
-```
-
-**For 8GB RAM machines:**
-
-```bash
-ollama pull gemma4:e4b      # Lighter generation model
-ollama pull qwen2.5:3b      # Lighter evaluation model
-```
-
-Then update `src/config/settings.py` to match your chosen models.
-
-### Step 3: Start Weaviate
-
-```bash
-docker compose up -d
-```
-
-### Step 4: Configure API Key
-
-```bash
-cp .env.example .env
-```
-
-Open `.env` and replace `your-cohere-key-here` with your actual Cohere API key.
-
-### Step 5: Add Your PDF Textbook
-
-The bot needs a PDF document as its knowledge base. Place it in the `data/raw/` folder and name it `textbook.pdf`:
-
-```bash
-cp ~/Downloads/your-textbook.pdf data/raw/textbook.pdf
-```
-
-**Need a free textbook?** Download any textbook from [OpenStax](https://openstax.org) — they offer free, peer-reviewed textbooks covering subjects like Physics, Biology, Chemistry, Psychology, Economics, and more. Download the PDF version, rename it to `textbook.pdf`, and place it in `data/raw/`. I Used Physics Book.
-
-Any PDF will work — textbooks, handbooks, course notes, documentation. The system will chunk, embed, and index it automatically. For best results, use a document with 50+ pages of text content.
-
-### Step 6: Ingest and Query
-
-```bash
-# Ingest your PDF(s) into the vector store
-python -m src.pipeline ingest --fresh
-
-# Ask a question
-python -m src.pipeline "What is physics?"
-```
-
-### Step 7: Run Evaluation
-
-```bash
-# Run unit tests
+# Evaluate
 pytest tests/ -v
-
-# Run RAGAS evaluation (requires Ollama running)
-python -m src.evaluation.evaluate
+python -m src.evaluation.harness --retrieval-only        # fast, no LLM
+RAGAS_JUDGE=openrouter python -m src.evaluation.evaluate  # full RAGAS
 ```
+
+Frontend: see [`frontend/README.md`](frontend/README.md).
+
+## Adding more books
+
+Drop PDFs into `data/raw/` named `"<year> <Subject> <Course> textbook.pdf"` (multi-year `7:8`, multi-word subjects, and per-chapter folders are all supported), then re-run the ingest. The picker and filtering update automatically from the corpus.
 
 ## Project Structure
 
 | Directory | Purpose |
 |-----------|---------|
-| `src/ingestion/` | PDF loading, token-aware chunking, embedding |
-| `src/retrieval/` | BM25, vector search, hybrid RRF fusion, Cohere reranking |
-| `src/generation/` | LLM answer generation, citation verification |
+| `src/ingestion/` | PDF loading, cleaning, chunking, FastEmbed embeddings, Qdrant/Weaviate ingest |
+| `src/retrieval/` | BM25, dense search, RRF fusion, Cohere reranking, Qdrant store |
+| `src/generation/` | Answer generation, model factory (OpenRouter/Ollama/Anthropic), citation verification |
+| `src/api/` | FastAPI server (`/ask`, `/catalog`, `/health`) |
+| `src/evaluation/` | RAGAS pipeline + deterministic harness |
 | `src/config/` | Version-controlled prompts (YAML) and settings |
-| `src/evaluation/` | RAGAS evaluation pipeline |
-| `src/api/` | FastAPI endpoint (chatbot interface — coming soon) |
-| `data/raw/` | Source PDF documents (add your PDFs here) |
+| `frontend/` | Next.js "Noor" UI |
 | `data/eval/` | Golden evaluation dataset |
-| `tests/` | Unit tests |
-
-## How It Works
-
-1. **Ingestion**: PDFs are loaded, split into 500-800 token chunks with 100-token overlap, embedded using HuggingFace sentence-transformers, and stored in Weaviate.
-
-2. **Retrieval**: User queries hit both a BM25 keyword index and vector similarity search. Results are fused using Reciprocal Rank Fusion (RRF), then reranked by Cohere's cross-encoder which evaluates each query-chunk pair jointly.
-
-3. **Generation**: The top-5 reranked chunks are passed to Gemma 4 with a citation-enforcing system prompt. The model must cite sources for every claim.
-
-4. **Verification**: A separate LLM call verifies whether the generated answer is actually supported by the retrieved context. If not, the system declines to answer rather than hallucinating.
-
-5. **Evaluation**: RAGAS measures faithfulness, answer relevancy, and context precision against a curated golden dataset. CI runs unit tests on every PR.
+| `tests/` | Unit tests (run in CI) |
 
 ## License
 
