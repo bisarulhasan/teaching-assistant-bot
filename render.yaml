@@ -5,6 +5,7 @@ services:
     name: wgs-noor-api
     runtime: python
     plan: free
+    region: oregon  # match the Qdrant cluster region (fast backend <-> DB)
     branch: feat/maths-ingestion-rework
     buildCommand: pip install -r requirements-deploy.txt
     startCommand: uvicorn src.api.main:app --host 0.0.0.0 --port $PORT
