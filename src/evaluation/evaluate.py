@@ -108,9 +108,20 @@ def run_evaluation(
     # fully-offline (but flakier) run.
     import os as _os
     from dotenv import load_dotenv as _load_dotenv
-    _load_dotenv()
+    _load_dotenv(override=True)  # override empty shell vars that shadow .env
     judge = _os.getenv("RAGAS_JUDGE", "openai").lower()
-    if judge == "openai":
+    if judge == "openrouter":
+        # OpenRouter is OpenAI-compatible. Judge a (still local) bot with a strong
+        # model so RAGAS's structured-output parser succeeds. Pick the model with
+        # RAGAS_JUDGE_MODEL (default a cheap, reliable one).
+        from langchain_openai import ChatOpenAI
+        eval_llm = LangchainLLMWrapper(ChatOpenAI(
+            model=_os.getenv("RAGAS_JUDGE_MODEL", "openai/gpt-4o-mini"),
+            temperature=0,
+            api_key=_os.getenv("OPENROUTER_API_KEY"),
+            base_url="https://openrouter.ai/api/v1",
+        ))
+    elif judge == "openai":
         from langchain_openai import ChatOpenAI
         eval_llm = LangchainLLMWrapper(
             ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=_os.getenv("OPENAI_API_KEY"))
